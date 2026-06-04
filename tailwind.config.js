@@ -1,28 +1,29 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
         serif: ['"DM Serif Display"', '"Noto Serif KR"', 'serif'],
-        body: ['"Noto Serif KR"', 'serif'],
-        sans: ['"Noto Sans KR"', 'sans-serif'],
+        body:  ['"Noto Serif KR"', 'serif'],
+        sans:  ['"Noto Sans KR"', 'sans-serif'],
       },
       colors: {
         paper: {
-          DEFAULT: '#f9f6f1',
-          warm: '#f4efe6',
-          border: '#e2dbd0',
+          DEFAULT: 'var(--color-paper)',
+          warm:    'var(--color-paper-warm)',
+          border:  'var(--color-paper-border)',
         },
         ink: {
-          DEFAULT: '#1a1714',
-          muted: '#5c574f',
-          faint: '#a09890',
+          DEFAULT: 'var(--color-ink)',
+          muted:   'var(--color-ink-muted)',
+          faint:   'var(--color-ink-faint)',
         },
         accent: {
-          DEFAULT: '#8b5e3c',
-          light: '#c49a6c',
-          pale: '#f0e6d8',
+          DEFAULT: 'var(--color-accent)',
+          light:   'var(--color-accent-light)',
+          pale:    'var(--color-accent-pale)',
         },
       },
       animation: {
@@ -31,7 +32,7 @@ export default {
       keyframes: {
         fadeSlide: {
           from: { opacity: '0', transform: 'translateY(-8px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
+          to:   { opacity: '1', transform: 'translateY(0)' },
         },
       },
     },

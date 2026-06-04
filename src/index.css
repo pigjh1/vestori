@@ -3,9 +3,33 @@
 @tailwind utilities;
 
 @layer base {
-  *, *::before, *::after {
-    box-sizing: border-box;
+  /* ── Light mode ── */
+  :root {
+    --color-paper:        #f9f6f1;
+    --color-paper-warm:   #f4efe6;
+    --color-paper-border: #e2dbd0;
+    --color-ink:          #1a1714;
+    --color-ink-muted:    #5c574f;
+    --color-ink-faint:    #a09890;
+    --color-accent:       #8b5e3c;
+    --color-accent-light: #c49a6c;
+    --color-accent-pale:  #f0e6d8;
   }
+
+  /* ── Dark mode ── */
+  .dark {
+    --color-paper:        #1a1714;
+    --color-paper-warm:   #211e1a;
+    --color-paper-border: #2e2925;
+    --color-ink:          #f0ebe4;
+    --color-ink-muted:    #b5aba0;
+    --color-ink-faint:    #6b635b;
+    --color-accent:       #c49a6c;
+    --color-accent-light: #8b5e3c;
+    --color-accent-pale:  #2a2118;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
 
   html {
     -webkit-font-smoothing: antialiased;
@@ -13,14 +37,9 @@
   }
 
   body {
-    @apply bg-paper text-ink font-body;
+    @apply bg-paper text-ink font-body transition-colors duration-300;
   }
 
-  textarea {
-    caret-color: theme('colors.accent.DEFAULT');
-  }
-
-  textarea::placeholder {
-    @apply text-ink-faint italic font-light;
-  }
+  textarea { caret-color: var(--color-accent); }
+  textarea::placeholder { @apply text-ink-faint italic font-light; }
 }
