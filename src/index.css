@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-paper text-ink font-body;
+  }
+
+  textarea {
+    caret-color: theme('colors.accent.DEFAULT');
+  }
+
+  textarea::placeholder {
+    @apply text-ink-faint italic font-light;
+  }
+}
