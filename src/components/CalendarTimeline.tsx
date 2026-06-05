@@ -8,7 +8,7 @@ import { getDateKey } from '@/utils/date'
 interface CalendarTimelineProps {
   entries: Entry[]
   onDelete: (id: string) => void
-  onUpdate: (id: string, text: string, category: CategoryId | null, tags: string[]) => void
+  onUpdate: (id: string, text: string, category: CategoryId | null, tags: string[], imageIds: string[]) => void
   onTagClick: (tag: string) => void
 }
 

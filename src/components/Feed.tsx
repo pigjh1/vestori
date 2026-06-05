@@ -5,14 +5,12 @@ import { formatDateLabel, getDateKey } from '@/utils/date'
 interface FeedProps {
   entries: Entry[]
   onDelete: (id: string) => void
-  onUpdate: (id: string, text: string, category: CategoryId | null, tags: string[]) => void
+  onUpdate: (id: string, text: string, category: CategoryId | null, tags: string[], imageIds: string[]) => void
   onTagClick: (tag: string) => void
 }
 
 export function Feed({ entries, onDelete, onUpdate, onTagClick }: FeedProps) {
-  const sorted = [...entries].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )
+  const sorted = [...entries].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   const groups: { dateKey: string; label: string; items: Entry[] }[] = []
   sorted.forEach(entry => {
     const key = getDateKey(entry.createdAt)
@@ -24,9 +22,7 @@ export function Feed({ entries, onDelete, onUpdate, onTagClick }: FeedProps) {
   if (entries.length === 0) return (
     <div className="text-center py-16">
       <div className="font-serif text-5xl italic text-paper-border leading-none mb-4 tracking-[-2px]">∿</div>
-      <p className="font-body text-sm font-light text-ink-faint italic leading-[1.7]">
-        결과가 없어요.<br />다른 검색어나 필터를 시도해보세요.
-      </p>
+      <p className="font-body text-sm font-light text-ink-faint italic leading-[1.7]">결과가 없어요.<br />다른 검색어나 필터를 시도해보세요.</p>
     </div>
   )
 

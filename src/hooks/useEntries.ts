@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import type { Entry, CategoryId } from '@/types'
+import { deleteImages } from '@/lib/imageDB'
 
 const STORAGE_KEY = 'vestori:entries'
 
@@ -10,6 +11,7 @@ const SAMPLE_ENTRIES: Entry[] = [
     text: '오늘 오랜만에 산책을 했다. 바람이 조금 차가웠지만, 그 안에서 봄의 냄새가 났다.',
     category: 'place',
     tags: ['봄', '산책'],
+    imageIds: [],
     createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
   },
   {
@@ -17,6 +19,7 @@ const SAMPLE_ENTRIES: Entry[] = [
     text: '오래된 사진첩을 꺼내봤다. 기억이란 게 얼마나 얇은지.',
     category: null,
     tags: ['기억', '회상'],
+    imageIds: [],
     createdAt: new Date(Date.now() - 86400000 * 2 + 7200000).toISOString(),
   },
   {
@@ -24,6 +27,7 @@ const SAMPLE_ENTRIES: Entry[] = [
     text: '카페에서 두 시간을 보냈다. 창밖으로 사람들이 지나갔다.',
     category: 'food',
     tags: ['카페', '일상'],
+    imageIds: [],
     createdAt: new Date(Date.now() - 3600000).toISOString(),
   },
 ]
@@ -34,7 +38,7 @@ function loadEntries(): Entry[] {
     if (!raw) return SAMPLE_ENTRIES
     const parsed = JSON.parse(raw) as Entry[]
     if (Array.isArray(parsed) && parsed.length > 0)
-      return parsed.map(e => ({ ...e, tags: e.tags ?? [] }))
+      return parsed.map(e => ({ ...e, tags: e.tags ?? [], imageIds: e.imageIds ?? [] }))
     return SAMPLE_ENTRIES
   } catch { return SAMPLE_ENTRIES }
 }
@@ -47,16 +51,32 @@ export function useEntries() {
   const [entries, setEntries] = useState<Entry[]>(loadEntries)
   useEffect(() => { saveEntries(entries) }, [entries])
 
-  const addEntry = useCallback((text: string, category: CategoryId | null, tags: string[], createdAt: string) => {
-    setEntries(prev => [{ id: uuidv4(), text, category, tags, createdAt }, ...prev])
+  const addEntry = useCallback((
+    text: string,
+    category: CategoryId | null,
+    tags: string[],
+    imageIds: string[],
+    createdAt: string,
+  ) => {
+    setEntries(prev => [{ id: uuidv4(), text, category, tags, imageIds, createdAt }, ...prev])
   }, [])
 
-  const updateEntry = useCallback((id: string, text: string, category: CategoryId | null, tags: string[]) => {
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, text, category, tags } : e))
+  const updateEntry = useCallback((
+    id: string,
+    text: string,
+    category: CategoryId | null,
+    tags: string[],
+    imageIds: string[],
+  ) => {
+    setEntries(prev => prev.map(e => e.id === id ? { ...e, text, category, tags, imageIds } : e))
   }, [])
 
   const deleteEntry = useCallback((id: string) => {
-    setEntries(prev => prev.filter(e => e.id !== id))
+    setEntries(prev => {
+      const entry = prev.find(e => e.id === id)
+      if (entry?.imageIds.length) deleteImages(entry.imageIds)
+      return prev.filter(e => e.id !== id)
+    })
   }, [])
 
   const allTags = Array.from(

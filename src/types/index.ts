@@ -10,23 +10,35 @@ export const CATEGORIES = [
 export type CategoryId = typeof CATEGORIES[number]['id']
 
 // ─────────────────────────────────────────
+// Image — IndexedDB에 별도 저장
+// ─────────────────────────────────────────
+export interface ImageRecord {
+  id: string        // uuid
+  entryId: string   // 연결된 Entry id
+  mimeType: string  // 'image/jpeg' etc
+  data: ArrayBuffer // 원본 바이너리
+  createdAt: string
+}
+
+// ─────────────────────────────────────────
 // Entry
 // ─────────────────────────────────────────
 export interface Entry {
   id: string
   text: string
   category: CategoryId | null
-  tags: string[]               // 자유 태그
-  createdAt: string            // ISO string
+  tags: string[]
+  imageIds: string[]   // ImageRecord id 목록
+  createdAt: string
 }
 
 // ─────────────────────────────────────────
-// Mood Record — 하루 기분 1~5
+// Mood Record
 // ─────────────────────────────────────────
 export type MoodScore = 1 | 2 | 3 | 4 | 5
 
 export interface MoodRecord {
-  date: string      // 'yyyy-MM-dd'
+  date: string
   score: MoodScore
-  note: string      // 짧은 한 줄 메모 (선택)
+  note: string
 }

@@ -1,11 +1,14 @@
 import { useState, useRef, useCallback, KeyboardEvent } from 'react'
 import { format } from 'date-fns'
 import { CATEGORIES, type CategoryId } from '@/types'
+import { ImageUploader } from './ImageUploader'
+import { ImageGallery } from './ImageGallery'
+import { v4 as uuidv4 } from 'uuid'
 
 const MAX_LENGTH = 500
 
 interface ComposerProps {
-  onSubmit: (text: string, category: CategoryId | null, tags: string[], createdAt: string) => void
+  onSubmit: (text: string, category: CategoryId | null, tags: string[], imageIds: string[], createdAt: string) => void
 }
 
 export function Composer({ onSubmit }: ComposerProps) {
@@ -14,27 +17,21 @@ export function Composer({ onSubmit }: ComposerProps) {
   const [category, setCategory] = useState<CategoryId | null>(null)
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [imageIds, setImageIds] = useState<string[]>([])
   const [useCustomTime, setUseCustomTime] = useState(false)
   const [customTime, setCustomTime] = useState(() => format(new Date(), "yyyy-MM-dd'T'HH:mm"))
+  const [composerEntryId] = useState(() => uuidv4()) // 임시 entryId (저장 전)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const addTag = useCallback(() => {
     const t = tagInput.trim().replace(/^#/, '')
-    if (t && !tags.includes(t) && tags.length < 10) {
-      setTags(prev => [...prev, t])
-    }
+    if (t && !tags.includes(t) && tags.length < 10) setTags(prev => [...prev, t])
     setTagInput('')
   }, [tagInput, tags])
 
-  const removeTag = useCallback((tag: string) => {
-    setTags(prev => prev.filter(t => t !== tag))
-  }, [])
-
   const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag() }
-    if (e.key === 'Backspace' && !tagInput && tags.length > 0) {
-      setTags(prev => prev.slice(0, -1))
-    }
+    if (e.key === 'Backspace' && !tagInput && tags.length > 0) setTags(prev => prev.slice(0, -1))
   }
 
   const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -48,13 +45,13 @@ export function Composer({ onSubmit }: ComposerProps) {
     const trimmed = text.trim()
     if (!trimmed) return
     const createdAt = useCustomTime ? new Date(customTime).toISOString() : new Date().toISOString()
-    onSubmit(trimmed, category, tags, createdAt)
-    setText(''); setCategory(null); setTags([]); setTagInput('')
+    onSubmit(trimmed, category, tags, imageIds, createdAt)
+    setText(''); setCategory(null); setTags([]); setTagInput(''); setImageIds([])
     setUseCustomTime(false)
     setCustomTime(format(new Date(), "yyyy-MM-dd'T'HH:mm"))
     setShowOptions(false)
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
-  }, [text, category, tags, useCustomTime, customTime, onSubmit])
+  }, [text, category, tags, imageIds, useCustomTime, customTime, onSubmit])
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -68,6 +65,7 @@ export function Composer({ onSubmit }: ComposerProps) {
     category ? CATEGORIES.find(c => c.id === category)?.label : null,
     ...tags.map(t => `#${t}`),
     useCustomTime ? format(new Date(customTime), 'M/d HH:mm') : null,
+    imageIds.length > 0 ? `사진 ${imageIds.length}장` : null,
   ].filter(Boolean)
 
   return (
@@ -87,8 +85,17 @@ export function Composer({ onSubmit }: ComposerProps) {
           placeholder="지금 이 순간을 기록하세요..."
           maxLength={MAX_LENGTH}
           rows={3}
-          className="w-full border-none outline-none bg-transparent font-body text-[15px] font-light text-ink leading-[1.75] resize-none min-h-[80px] placeholder:text-ink-faint placeholder:italic placeholder:font-light caret-accent"
+          className="w-full border-none outline-none bg-transparent font-body font-light text-ink leading-[1.75] resize-none min-h-[80px] placeholder:text-ink-faint placeholder:italic placeholder:font-light"
         />
+
+        {/* 이미지 미리보기 */}
+        {imageIds.length > 0 && (
+          <ImageGallery
+            imageIds={imageIds}
+            editable
+            onRemove={id => setImageIds(prev => prev.filter(i => i !== id))}
+          />
+        )}
 
         {showOptions && (
           <div className="mt-3 mb-1 flex flex-col gap-3 pt-3 border-t border-paper-border">
@@ -98,8 +105,8 @@ export function Composer({ onSubmit }: ComposerProps) {
               <div className="flex gap-1.5 flex-wrap">
                 {CATEGORIES.map(({ id, label }) => (
                   <button key={id} onClick={() => setCategory(category === id ? null : id)}
-                    className={`font-sans text-[11px] px-2.5 py-1 rounded-sm border transition-all duration-150 cursor-pointer
-                      ${category === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light hover:text-ink-muted'}`}>
+                    className={`font-sans text-[11px] px-2.5 py-1 rounded-sm border transition-all cursor-pointer
+                      ${category === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
                     {label}
                   </button>
                 ))}
@@ -113,16 +120,23 @@ export function Composer({ onSubmit }: ComposerProps) {
                 {tags.map(tag => (
                   <span key={tag} className="inline-flex items-center gap-1 font-sans text-[11px] px-2 py-0.5 rounded-sm bg-accent-pale text-accent border border-accent/20">
                     #{tag}
-                    <button onClick={() => removeTag(tag)} className="text-accent/60 hover:text-accent leading-none cursor-pointer">×</button>
+                    <button onClick={() => setTags(prev => prev.filter(t => t !== tag))} className="text-accent/60 hover:text-accent cursor-pointer">×</button>
                   </span>
                 ))}
-                <input
-                  value={tagInput}
-                  onChange={e => setTagInput(e.target.value)}
+                <input value={tagInput} onChange={e => setTagInput(e.target.value)}
                   onKeyDown={handleTagKeyDown}
-                  onBlur={addTag}
                   placeholder="태그 입력 후 Enter"
-                  className="font-sans text-[11px] text-ink bg-transparent outline-none placeholder:text-ink-faint min-w-[100px] border-b border-paper-border focus:border-accent-light transition-colors py-0.5"
+                  className="font-sans font-light text-ink bg-transparent outline-none placeholder:text-ink-faint border-b border-paper-border focus:border-accent-light py-0.5 min-w-[100px] transition-colors" />
+              </div>
+            </div>
+
+            {/* 이미지 */}
+            <div className="flex items-start gap-2">
+              <span className="font-sans text-[11px] text-ink-faint font-light w-14 flex-shrink-0 pt-1">이미지</span>
+              <div className="flex-1">
+                <ImageUploader
+                  entryId={composerEntryId}
+                  onUploaded={id => setImageIds(prev => [...prev, id])}
                 />
               </div>
             </div>
@@ -131,13 +145,13 @@ export function Composer({ onSubmit }: ComposerProps) {
             <div className="flex items-center gap-2">
               <span className="font-sans text-[11px] text-ink-faint font-light w-14 flex-shrink-0">시간</span>
               <button onClick={() => setUseCustomTime(v => !v)}
-                className={`font-sans text-[11px] px-2.5 py-1 rounded-sm border transition-all duration-150 cursor-pointer
-                  ${useCustomTime ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light hover:text-ink-muted'}`}>
+                className={`font-sans text-[11px] px-2.5 py-1 rounded-sm border transition-all cursor-pointer
+                  ${useCustomTime ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
                 직접 입력
               </button>
               {useCustomTime && (
                 <input type="datetime-local" value={customTime} onChange={e => setCustomTime(e.target.value)}
-                  className="font-sans text-[11px] text-ink-muted border border-paper-border rounded-sm px-2 py-1 bg-paper-warm outline-none focus:border-accent-light transition-colors" />
+                  className="font-sans text-ink-muted border border-paper-border rounded-sm px-2 py-1 bg-paper-warm outline-none focus:border-accent-light transition-colors" />
               )}
             </div>
           </div>
@@ -156,7 +170,7 @@ export function Composer({ onSubmit }: ComposerProps) {
             ))}
           </div>
           <button onClick={handleSubmit} disabled={!text.trim()}
-            className="bg-ink text-white rounded-sm px-[18px] py-[7px] font-sans text-xs tracking-[0.04em] transition-all duration-150 hover:bg-accent disabled:opacity-40 disabled:cursor-default active:scale-[0.97]">
+            className="bg-ink text-white rounded-sm px-[18px] py-[7px] font-sans text-xs tracking-[0.04em] transition-all hover:bg-accent disabled:opacity-40 disabled:cursor-default active:scale-[0.97]">
             기록하기
           </button>
         </div>

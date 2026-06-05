@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react'
 import type { Entry, CategoryId } from '@/types'
 
-export type ViewMode = 'feed' | 'calendar-month' | 'calendar-timeline' | 'stats' | 'mood'
+export type PageMode = 'records' | 'mood' | 'routine' | 'settings'
+export type RecordView = 'feed' | 'calendar' | 'timeline'
 
 export function useFilter(entries: Entry[]) {
   const [query, setQuery] = useState('')
   const [activeTag, setActiveTag] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<CategoryId | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('feed')
+  const [pageMode, setPageMode] = useState<PageMode>('records')
+  const [recordView, setRecordView] = useState<RecordView>('feed')
 
   const filtered = useMemo(() => {
     return entries.filter(e => {
@@ -24,5 +26,8 @@ export function useFilter(entries: Entry[]) {
   const clearFilters = () => { setQuery(''); setActiveTag(null); setActiveCategory(null) }
   const hasActiveFilter = !!query || !!activeTag || !!activeCategory
 
-  return { query, setQuery, activeTag, toggleTag, activeCategory, toggleCategory, clearFilters, hasActiveFilter, viewMode, setViewMode, filtered }
+  return {
+    query, setQuery, activeTag, toggleTag, activeCategory, toggleCategory,
+    clearFilters, hasActiveFilter, pageMode, setPageMode, recordView, setRecordView, filtered,
+  }
 }
