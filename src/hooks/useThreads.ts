@@ -7,7 +7,9 @@ const STORAGE_KEY = 'vestori:threads'
 function load(): ThreadPost[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
+    const parsed = raw ? JSON.parse(raw) : []
+    // 구버전 호환: imageIds 없으면 빈 배열
+    return parsed.map((p: ThreadPost) => ({ ...p, imageIds: p.imageIds ?? [] }))
   } catch { return [] }
 }
 

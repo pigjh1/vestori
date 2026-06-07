@@ -13,8 +13,8 @@
     --color-accent:       #7a4f2d;
     --color-accent-light: #b5895a;
     --color-accent-pale:  #ede0d1;
-    --font-body:          "DM Serif Display", "Noto Serif KR", serif;
-    --font-serif:         "DM Serif Display", "Noto Serif KR", serif;
+    --font-body:          "Noto Sans KR", sans-serif;
+    --font-serif:         "Noto Sans KR", sans-serif;
   }
 
   .dark {
@@ -45,12 +45,15 @@
     transition: background-color 0.3s, color 0.3s;
   }
 
-  /* 폰트 CSS 변수 적용 */
+  /* 동적 폰트/색상 적용 */
   .font-body  { font-family: var(--font-body) !important; }
   .font-serif { font-family: var(--font-serif) !important; }
 
   /* 16px — iOS 자동 줌 방지 */
-  input, textarea, select { font-size: 16px !important; caret-color: var(--color-accent); }
+  input, textarea, select {
+    font-size: 16px !important;
+    caret-color: var(--color-accent);
+  }
 
   textarea::placeholder, input::placeholder {
     color: var(--color-ink-faint);

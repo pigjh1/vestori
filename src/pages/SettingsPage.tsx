@@ -31,10 +31,10 @@ function formatBytes(b: number): string {
   return `${(b / 1024 / 1024).toFixed(1)} MB`
 }
 
-const FONT_OPTIONS: { id: FontFamily; label: string; preview: string }[] = [
-  { id: 'default', label: '세리프 (기본)', preview: 'Aa' },
-  { id: 'gothic',  label: '고딕',         preview: 'Aa' },
-  { id: 'mono',    label: '모노스페이스', preview: 'Aa' },
+const FONT_OPTIONS: { id: FontFamily; label: string; family: string }[] = [
+  { id: 'sans',      label: 'Noto Sans (기본)', family: '"Noto Sans KR", sans-serif' },
+  { id: 'grotesque', label: 'Outfit (기하)',    family: '"Outfit", "Noto Sans KR", sans-serif' },
+  { id: 'mono',      label: 'Mono (코드)',      family: '"JetBrains Mono", monospace' },
 ]
 
 const HUE_PRESETS = [
@@ -59,6 +59,8 @@ export function SettingsPage({ entries }: Props) {
   const [imageSize, setImageSize] = useState<number | null>(null)
   const [clearConfirm, setClearConfirm] = useState(false)
   const [clearDone, setClearDone] = useState(false)
+  const [deleteEntriesConfirm, setDeleteEntriesConfirm] = useState(false)
+  const [deleteEntriesDone, setDeleteEntriesDone] = useState(false)
 
   useEffect(() => { getStorageSize().then(setImageSize) }, [])
 
@@ -68,7 +70,6 @@ export function SettingsPage({ entries }: Props) {
     const d = getDateKey(e.createdAt)
     return d >= startDate && d <= endDate
   }).length
-
   const handleExport = async () => {
     if (previewCount === 0) return
     setExporting(true); setResult(null); setExportError(null)
@@ -84,6 +85,14 @@ export function SettingsPage({ entries }: Props) {
     setTimeout(() => setClearDone(false), 3000)
   }
 
+  const handleDeleteAllEntries = async () => {
+    if (!deleteEntriesConfirm) { setDeleteEntriesConfirm(true); return }
+    // App에서 deleteEntry를 여러 번 호출해야 하므로, 여기서는 localStorage 직접 삭제
+    localStorage.removeItem('vestori:entries')
+    setDeleteEntriesDone(true); setDeleteEntriesConfirm(false)
+    setTimeout(() => { setDeleteEntriesDone(false); window.location.reload() }, 2000)
+  }
+
   return (
     <div className="flex flex-col gap-10 max-w-lg">
 
@@ -94,11 +103,11 @@ export function SettingsPage({ entries }: Props) {
         <div className="mb-5">
           <Label>글꼴</Label>
           <div className="flex gap-2 flex-wrap">
-            {FONT_OPTIONS.map(({ id, label, preview }) => (
+            {FONT_OPTIONS.map(({ id, label, family }) => (
               <button key={id} onClick={() => setFont(id)}
                 className={`flex flex-col items-center gap-1 px-4 py-3 rounded-sm border transition-all cursor-pointer
                   ${settings.font === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light bg-white'}`}>
-                <span className="text-[20px] leading-none" style={{ fontFamily: id === 'default' ? '"DM Serif Display", serif' : id === 'gothic' ? '"Noto Sans KR", sans-serif' : 'monospace' }}>{preview}</span>
+                <span className="text-[20px] leading-none" style={{ fontFamily: family }}>Aa</span>
                 <span className="font-sans text-[11px]">{label}</span>
               </button>
             ))}
@@ -173,7 +182,7 @@ export function SettingsPage({ entries }: Props) {
           </p>
         </div>
 
-        <button onClick={handleExport} disabled={exporting || previewCount === 0}
+<button onClick={handleExport} disabled={exporting || previewCount === 0}
           className="w-full bg-ink text-white font-sans text-[13px] py-3 rounded-sm hover:bg-accent transition-colors disabled:opacity-40 cursor-pointer">
           {exporting ? '내보내는 중...' : `${previewCount}개 기록 내보내기`}
         </button>
@@ -186,8 +195,26 @@ export function SettingsPage({ entries }: Props) {
         <SectionTitle>데이터</SectionTitle>
         <div className="flex flex-col gap-3">
           <div className="p-4 bg-white border border-paper-border rounded-sm">
-            <p className="font-sans text-[12px] text-ink-muted mb-0.5">기록 (localStorage)</p>
-            <p className="font-sans text-[12px] text-ink-faint"><span className="text-accent">{entries.length}개</span>의 기록</p>
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="font-sans text-[12px] text-ink-muted mb-0.5">기록 (localStorage)</p>
+                <p className="font-sans text-[12px] text-ink-faint"><span className="text-accent">{entries.length}개</span>의 기록</p>
+              </div>
+              {entries.length > 0 && (
+                <button onClick={handleDeleteAllEntries}
+                  className={`font-sans text-[12px] px-3 py-1.5 rounded-sm border transition-all cursor-pointer
+                    ${deleteEntriesConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+                  {deleteEntriesConfirm ? '정말 삭제' : '전체 삭제'}
+                </button>
+              )}
+            </div>
+            {deleteEntriesConfirm && (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="font-sans text-[11px] text-red-400 flex-1">모든 기록이 영구 삭제돼요. 되돌릴 수 없어요.</p>
+                <button onClick={() => setDeleteEntriesConfirm(false)} className="font-sans text-[11px] text-ink-faint cursor-pointer border-none bg-none">취소</button>
+              </div>
+            )}
+            {deleteEntriesDone && <p className="font-sans text-[11px] text-accent mt-1">✓ 모든 기록이 삭제됐어요</p>}
           </div>
           <div className="p-4 bg-white border border-paper-border rounded-sm">
             <div className="flex items-start justify-between mb-2">

@@ -25,11 +25,11 @@ export function MoodPage() {
   const yearStart = startOfYear(new Date())
   const allDays   = eachDayOfInterval(yearStart, new Date())
 
-  // 주(column) 단위로 묶기 — 일요일 시작
+  // 행 = 주(week), 열 = 요일(0~6) — 모바일 세로 레이아웃
+  // weeks[i] = 그 주의 7일 (일~토), null = 해당 날짜 없음
   const weeks: (string | null)[][] = []
   let week: (string | null)[] = []
 
-  // 첫 주 앞 패딩
   const firstDow = getDayOfWeek(getDateKey(yearStart.toISOString()))
   for (let i = 0; i < firstDow; i++) week.push(null)
 
@@ -43,18 +43,20 @@ export function MoodPage() {
     weeks.push(week)
   }
 
-  // 월 레이블 위치 (column index)
-  const monthLabels: { label: string; col: number }[] = []
+  // 월 레이블 — 해당 주가 시작되는 row index
+  const monthLabels: { label: string; row: number }[] = []
   let lastMonth = -1
-  weeks.forEach((w, col) => {
+  weeks.forEach((w, row) => {
     const first = w.find(d => d !== null)
     if (!first) return
     const m = new Date(first).getMonth()
-    if (m !== lastMonth) { monthLabels.push({ label: KO_MONTHS[m], col }); lastMonth = m }
+    if (m !== lastMonth) { monthLabels.push({ label: KO_MONTHS[m], row }); lastMonth = m }
   })
 
-  const CELL = 13   // px
-  const GAP  = 2    // px
+  // 셀 크기: 375px 기준 (16px*2 패딩 + 4px 여백) → (375-32-8) / 7 ≈ 47px
+  // 너무 크면 이상하니 최대 40px 캡
+  const CELL = 'minmax(0, 40px)'
+  const GAP  = 3    // px
 
   const openInput = (dateKey: string) => {
     if (isFutureDate(dateKey)) return
@@ -107,74 +109,62 @@ export function MoodPage() {
         </div>
       )}
 
-      {/* 연간 365 그리드 — 가로 스크롤 */}
-      <div className="bg-white border border-paper-border rounded-sm p-4 mb-5 overflow-x-auto">
-        {/* 월 레이블 행 */}
-        <div className="flex mb-1" style={{ paddingLeft: `${CELL + GAP + 4}px` }}>
-          {weeks.map((_, col) => {
-            const mp = monthLabels.find(m => m.col === col)
+      {/* 연간 365 그리드 — 행=주, 열=요일, 모바일 꽉 채움 */}
+      <div className="bg-white border border-paper-border rounded-sm p-3 mb-5">
+        {/* 요일 헤더 */}
+        <div className="grid mb-1" style={{ gridTemplateColumns: `28px repeat(7, ${CELL})`, gap: GAP }}>
+          <div />
+          {KO_DAYS.map(d => (
+            <div key={d} className="text-center font-sans text-ink-faint" style={{ fontSize: 9 }}>{d}</div>
+          ))}
+        </div>
+
+        {/* 주 행들 */}
+        <div className="flex flex-col" style={{ gap: GAP }}>
+          {weeks.map((week, wi) => {
+            const ml = monthLabels.find(m => m.row === wi)
             return (
-              <div key={col} className="flex-shrink-0" style={{ width: CELL, marginRight: GAP }}>
-                {mp && <span className="font-sans text-[9px] text-ink-faint whitespace-nowrap">{mp.label}</span>}
+              <div key={wi} className="grid items-center" style={{ gridTemplateColumns: `28px repeat(7, ${CELL})`, gap: GAP }}>
+                {/* 월 레이블 */}
+                <div className="flex items-center justify-end pr-1">
+                  {ml && <span className="font-sans text-ink-faint whitespace-nowrap" style={{ fontSize: 9 }}>{ml.label}</span>}
+                </div>
+                {/* 7일 셀 */}
+                {week.map((dateKey, di) => {
+                  if (!dateKey) return <div key={di} style={{ aspectRatio: '1', borderRadius: 3 }} />
+                  const record  = records[dateKey]
+                  const future  = isFutureDate(dateKey)
+                  const isToday = dateKey === today
+                  const bg      = record ? MOOD_COLORS[record.score].bg : 'var(--color-paper-border)'
+                  return (
+                    <div key={dateKey}
+                      style={{
+                        aspectRatio: '1',
+                        borderRadius: 3,
+                        background: bg,
+                        opacity: future ? 0.18 : record ? 1 : 0.35,
+                        outline: isToday ? '2px solid var(--color-accent)' : undefined,
+                        outlineOffset: 1,
+                        cursor: future ? 'default' : 'pointer',
+                      }}
+                      onClick={() => !future && openInput(dateKey)}
+                      onMouseEnter={() => setHovered(dateKey)}
+                      onMouseLeave={() => setHovered(null)}
+                      title={record ? `${dateKey} — ${MOOD_COLORS[record.score].label}` : dateKey}
+                    />
+                  )
+                })}
               </div>
             )
           })}
         </div>
 
-        <div className="flex" style={{ gap: GAP }}>
-          {/* 요일 레이블 열 */}
-          <div className="flex flex-col flex-shrink-0" style={{ width: CELL, gap: GAP }}>
-            {KO_DAYS.map((d, i) => (
-              <div key={d} className="flex items-center justify-end"
-                style={{ height: CELL }}>
-                {i % 2 === 1 && (
-                  <span className="font-sans text-ink-faint" style={{ fontSize: 8 }}>{d}</span>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* 주 컬럼들 */}
-          {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col flex-shrink-0" style={{ gap: GAP }}>
-              {week.map((dateKey, di) => {
-                if (!dateKey) return <div key={di} style={{ width: CELL, height: CELL }} />
-                const record  = records[dateKey]
-                const future  = isFutureDate(dateKey)
-                const isToday = dateKey === today
-                const bg      = record
-                  ? MOOD_COLORS[record.score].bg
-                  : 'var(--color-paper-border)'
-
-                return (
-                  <div key={dateKey}
-                    style={{
-                      width: CELL, height: CELL,
-                      borderRadius: 2,
-                      background: bg,
-                      opacity: future ? 0.18 : record ? 1 : 0.38,
-                      outline: isToday ? '1.5px solid var(--color-accent)' : undefined,
-                      outlineOffset: 1,
-                      cursor: future ? 'default' : 'pointer',
-                      flexShrink: 0,
-                    }}
-                    onClick={() => !future && openInput(dateKey)}
-                    onMouseEnter={() => setHovered(dateKey)}
-                    onMouseLeave={() => setHovered(null)}
-                    title={record ? `${dateKey} — ${MOOD_COLORS[record.score].label}` : dateKey}
-                  />
-                )
-              })}
-            </div>
-          ))}
-        </div>
-
         {/* 범례 */}
-        <div className="flex items-center gap-2 mt-3 justify-end">
+        <div className="flex items-center gap-1.5 mt-3 justify-end">
           <span className="font-sans text-[10px] text-ink-faint">낮음</span>
           {([1,2,3,4,5] as MoodScore[]).map(s => (
-            <div key={s} style={{ width: CELL, height: CELL, background: MOOD_COLORS[s].bg, borderRadius: 2, flexShrink: 0 }}
-              title={MOOD_COLORS[s].label} />
+            <div key={s} className="w-4 h-4 rounded-sm flex-shrink-0"
+              style={{ background: MOOD_COLORS[s].bg }} title={MOOD_COLORS[s].label} />
           ))}
           <span className="font-sans text-[10px] text-ink-faint">높음</span>
         </div>

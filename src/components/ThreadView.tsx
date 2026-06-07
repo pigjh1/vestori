@@ -74,7 +74,7 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
                     {post.text}
                   </p>
                 )}
-                {post.imageIds.length > 0 && (
+                {(post.imageIds ?? []).length > 0 && (
                   <div className="mt-2">
                     <ImageGallery imageIds={post.imageIds} />
                   </div>

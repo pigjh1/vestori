@@ -11,7 +11,7 @@ export type CategoryId = typeof CATEGORIES[number]['id']
 
 export interface FoodMeta {
   amount: number | null
-  rating: number | null  // 0~5, 0.5 단위
+  rating: number | null
 }
 
 export type CategoryMeta = {
@@ -30,7 +30,7 @@ export interface ImageRecord {
 }
 
 // ─────────────────────────────────────────
-// Entry — location은 기본 필드
+// Entry
 // ─────────────────────────────────────────
 export interface Entry {
   id: string
@@ -39,7 +39,7 @@ export interface Entry {
   categoryMeta: CategoryMeta
   tags: string[]
   imageIds: string[]
-  location: string          // 기본 위치 필드 (카테고리 무관)
+  location: string
   createdAt: string
 }
 
@@ -55,7 +55,7 @@ export interface MoodRecord {
 }
 
 // ─────────────────────────────────────────
-// Thread (트위터 스레드 방식)
+// Thread (트위터 스레드)
 // ─────────────────────────────────────────
 export interface ThreadPost {
   id: string
@@ -66,11 +66,11 @@ export interface ThreadPost {
 }
 
 // ─────────────────────────────────────────
-// 디자인 설정
+// 디자인 설정 — 폰트 산세리프만, 색상 동적
 // ─────────────────────────────────────────
-export type FontFamily = 'default' | 'gothic' | 'mono'
+export type FontFamily = 'sans' | 'grotesque' | 'mono'
 
 export interface DesignSettings {
   font: FontFamily
-  accentHue: number
+  accentHue: number  // 0~360
 }
