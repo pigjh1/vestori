@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────
-// 카테고리 — 여기에 추가/수정하면 전체 반영
+// 카테고리
 // ─────────────────────────────────────────
 export const CATEGORIES = [
   { id: 'food',        label: '음식' },
@@ -9,26 +9,37 @@ export const CATEGORIES = [
 
 export type CategoryId = typeof CATEGORIES[number]['id']
 
+export interface FoodMeta {
+  amount: number | null
+  rating: number | null  // 0~5, 0.5 단위
+}
+
+export type CategoryMeta = {
+  food?: Partial<FoodMeta>
+}
+
 // ─────────────────────────────────────────
-// Image — IndexedDB에 별도 저장
+// Image
 // ─────────────────────────────────────────
 export interface ImageRecord {
-  id: string        // uuid
-  entryId: string   // 연결된 Entry id
-  mimeType: string  // 'image/jpeg' etc
-  data: ArrayBuffer // 원본 바이너리
+  id: string
+  entryId: string
+  mimeType: string
+  data: ArrayBuffer
   createdAt: string
 }
 
 // ─────────────────────────────────────────
-// Entry
+// Entry — location은 기본 필드
 // ─────────────────────────────────────────
 export interface Entry {
   id: string
   text: string
   category: CategoryId | null
+  categoryMeta: CategoryMeta
   tags: string[]
-  imageIds: string[]   // ImageRecord id 목록
+  imageIds: string[]
+  location: string          // 기본 위치 필드 (카테고리 무관)
   createdAt: string
 }
 
@@ -41,4 +52,25 @@ export interface MoodRecord {
   date: string
   score: MoodScore
   note: string
+}
+
+// ─────────────────────────────────────────
+// Thread (트위터 스레드 방식)
+// ─────────────────────────────────────────
+export interface ThreadPost {
+  id: string
+  entryId: string
+  text: string
+  imageIds: string[]
+  createdAt: string
+}
+
+// ─────────────────────────────────────────
+// 디자인 설정
+// ─────────────────────────────────────────
+export type FontFamily = 'default' | 'gothic' | 'mono'
+
+export interface DesignSettings {
+  font: FontFamily
+  accentHue: number
 }

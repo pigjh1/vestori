@@ -3,27 +3,27 @@
 @tailwind utilities;
 
 @layer base {
-  /* ── Light mode ── */
   :root {
     --color-paper:        #f5f1eb;
     --color-paper-warm:   #ede7dc;
     --color-paper-border: #d8cfc3;
     --color-ink:          #1c1916;
     --color-ink-muted:    #4a443d;
-    --color-ink-faint:    #7a726a;   /* 명도 올림: a09890 → 7a726a */
+    --color-ink-faint:    #7a726a;
     --color-accent:       #7a4f2d;
     --color-accent-light: #b5895a;
     --color-accent-pale:  #ede0d1;
+    --font-body:          "DM Serif Display", "Noto Serif KR", serif;
+    --font-serif:         "DM Serif Display", "Noto Serif KR", serif;
   }
 
-  /* ── Dark mode ── */
   .dark {
     --color-paper:        #181512;
     --color-paper-warm:   #1f1b17;
     --color-paper-border: #2c2720;
     --color-ink:          #f0ebe3;
-    --color-ink-muted:    #c8bfb5;   /* 명도 올림: b5aba0 → c8bfb5 */
-    --color-ink-faint:    #9a9088;   /* 명도 올림: 6b635b → 9a9088 */
+    --color-ink-muted:    #c8bfb5;
+    --color-ink-faint:    #9a9088;
     --color-accent:       #c8976a;
     --color-accent-light: #7a4f2d;
     --color-accent-pale:  #28201a;
@@ -37,27 +37,27 @@
   }
 
   body {
-    @apply bg-paper text-ink font-body transition-colors duration-300;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
     font-size: 15px;
     line-height: 1.7;
+    transition: background-color 0.3s, color 0.3s;
   }
 
-  /* 모든 input, textarea 16px — iOS 자동 줌 방지 포함 */
-  input, textarea, select {
-    font-size: 16px !important;
-    caret-color: var(--color-accent);
-  }
+  /* 폰트 CSS 변수 적용 */
+  .font-body  { font-family: var(--font-body) !important; }
+  .font-serif { font-family: var(--font-serif) !important; }
 
-  textarea::placeholder,
-  input::placeholder {
+  /* 16px — iOS 자동 줌 방지 */
+  input, textarea, select { font-size: 16px !important; caret-color: var(--color-accent); }
+
+  textarea::placeholder, input::placeholder {
     color: var(--color-ink-faint);
     font-style: italic;
     font-weight: 300;
   }
 
-  /* 기본 텍스트 사이즈 계층 정의 */
-  .text-ui-xs  { font-size: 11px; line-height: 1.5; }
-  .text-ui-sm  { font-size: 12px; line-height: 1.5; }
-  .text-ui-md  { font-size: 13px; line-height: 1.6; }
-  .text-body   { font-size: 15px; line-height: 1.85; }
+  /* safe-area (iPhone 홈 인디케이터) */
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }

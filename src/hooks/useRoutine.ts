@@ -1,40 +1,30 @@
 import { useState, useEffect, useCallback } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import { format, subDays } from 'date-fns'
+import { todayKey, getDateKey, subDays } from '@/utils/date'
 
 export interface Habit {
   id: string
   name: string
   createdAt: string
-  streak: number       // 연속 달성일 (오늘 기준 계산)
+  streak: number
 }
 
-// checks: { 'yyyy-MM-dd': { habitId: boolean } }
 type CheckMap = Record<string, Record<string, boolean>>
 
 const HABITS_KEY = 'vestori:habits'
 const CHECKS_KEY = 'vestori:checks'
 
 function load<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key)
-    return raw ? (JSON.parse(raw) as T) : fallback
-  } catch { return fallback }
-}
-
-function save(key: string, val: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(val)) } catch {}
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) as T : fallback }
+  catch { return fallback }
 }
 
 function calcStreak(habitId: string, checks: CheckMap): number {
   let streak = 0
   let cursor = new Date()
-  // 오늘 체크 안 됐으면 어제부터 확인
-  const todayKey = format(cursor, 'yyyy-MM-dd')
-  if (!checks[todayKey]?.[habitId]) cursor = subDays(cursor, 1)
-
+  if (!checks[todayKey()]?.[habitId]) cursor = subDays(cursor, 1)
   for (let i = 0; i < 365; i++) {
-    const key = format(cursor, 'yyyy-MM-dd')
+    const key = getDateKey(cursor.toISOString())
     if (checks[key]?.[habitId]) { streak++; cursor = subDays(cursor, 1) }
     else break
   }
@@ -45,10 +35,9 @@ export function useRoutine() {
   const [habits, setHabits] = useState<Habit[]>(() => load(HABITS_KEY, []))
   const [checks, setChecks] = useState<CheckMap>(() => load(CHECKS_KEY, {}))
 
-  useEffect(() => { save(HABITS_KEY, habits) }, [habits])
-  useEffect(() => { save(CHECKS_KEY, checks)  }, [checks])
+  useEffect(() => { try { localStorage.setItem(HABITS_KEY, JSON.stringify(habits)) } catch {} }, [habits])
+  useEffect(() => { try { localStorage.setItem(CHECKS_KEY, JSON.stringify(checks)) } catch {} }, [checks])
 
-  // 스트릭 갱신
   const habitsWithStreak = habits.map(h => ({ ...h, streak: calcStreak(h.id, checks) }))
 
   const addHabit = useCallback((name: string) => {
@@ -57,14 +46,10 @@ export function useRoutine() {
 
   const deleteHabit = useCallback((id: string) => {
     setHabits(prev => prev.filter(h => h.id !== id))
-    // 해당 habit의 체크 기록 정리
     setChecks(prev => {
       const next = { ...prev }
       Object.keys(next).forEach(date => {
-        if (next[date][id] !== undefined) {
-          const { [id]: _, ...rest } = next[date]
-          next[date] = rest
-        }
+        if (next[date][id] !== undefined) { const { [id]: _, ...rest } = next[date]; next[date] = rest }
       })
       return next
     })

@@ -1,96 +1,61 @@
-import { format, eachDayOfInterval, parseISO, startOfDay, endOfDay } from 'date-fns'
-import { ko } from 'date-fns/locale'
 import type { Entry } from '@/types'
 import { CATEGORIES } from '@/types'
 import { getImages, bufferToBase64 } from '@/lib/imageDB'
-
-function dateToFilename(dateKey: string): string {
-  return format(parseISO(dateKey), 'yyyy.MM.dd.EEE', { locale: ko })
-}
+import { getDateKey, formatDateFilename, formatDateFull, formatTime, startOfDay, endOfDay, eachDayOfInterval } from '@/utils/date'
 
 async function entryToMd(entry: Entry): Promise<string> {
-  const time = format(parseISO(entry.createdAt), 'HH:mm')
   const lines: string[] = []
-  lines.push(`### ${time}`)
+  lines.push(`### ${formatTime(entry.createdAt)}`)
   lines.push('')
   lines.push(entry.text)
 
-  // 이미지 — base64 inline 이미지로 삽입
+  const food = entry.categoryMeta?.food
+  const metaParts = []
+  if (entry.location) metaParts.push(`📍 ${entry.location}`)
+  if (food?.amount != null) metaParts.push(`💳 ${food.amount.toLocaleString('ko-KR')}원`)
+  if (food?.rating != null) metaParts.push(`⭐ ${food.rating}/5`)
+  if (metaParts.length > 0) { lines.push(''); lines.push(metaParts.join('  ')) }
+
   if (entry.imageIds.length > 0) {
     const images = await getImages(entry.imageIds)
-    images.forEach((img, i) => {
-      lines.push('')
-      lines.push(`![이미지 ${i + 1}](${bufferToBase64(img.data, img.mimeType)})`)
-    })
+    images.forEach((img, i) => { lines.push(''); lines.push(`![이미지 ${i + 1}](${bufferToBase64(img.data, img.mimeType)})`) })
   }
 
-  if (entry.tags.length > 0) {
-    lines.push('')
-    lines.push(entry.tags.map(t => `\`#${t}\``).join(' '))
+  if (entry.tags.length > 0) { lines.push(''); lines.push(entry.tags.map(t => `\`#${t}\``).join(' ')) }
+  return lines.join('\n')
+}
+
+async function buildFileContent(dateLabel: string, categoryLabel: string | null, entries: Entry[]): Promise<string> {
+  const sorted = [...entries].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  const lines = [`# ${dateLabel}${categoryLabel ? ` — ${categoryLabel}` : ''}`, '', `> ${sorted.length}개의 기록`, '', '---', '']
+  for (let i = 0; i < sorted.length; i++) {
+    lines.push(await entryToMd(sorted[i]))
+    if (i < sorted.length - 1) { lines.push(''); lines.push('---'); lines.push('') }
   }
   return lines.join('\n')
 }
 
-function buildFileContent(dateLabel: string, categoryLabel: string | null, entries: Entry[]): Promise<string> {
-  const sorted = [...entries].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-
-  return (async () => {
-    const lines: string[] = []
-    lines.push(`# ${dateLabel}${categoryLabel ? ` — ${categoryLabel}` : ''}`)
-    lines.push('')
-    lines.push(`> ${sorted.length}개의 기록`)
-    lines.push('')
-    lines.push('---')
-    lines.push('')
-
-    for (let i = 0; i < sorted.length; i++) {
-      lines.push(await entryToMd(sorted[i]))
-      if (i < sorted.length - 1) { lines.push(''); lines.push('---'); lines.push('') }
-    }
-    return lines.join('\n')
-  })()
-}
-
 async function buildDayFiles(dateKey: string, entries: Entry[]): Promise<Record<string, string>> {
   const files: Record<string, string> = {}
-  const base = dateToFilename(dateKey)
-  const dateLabel = format(parseISO(dateKey), 'yyyy년 M월 d일 (E)', { locale: ko })
-
+  const base = formatDateFilename(dateKey)
+  const dateLabel = formatDateFull(dateKey)
   const byCategory: Record<string, Entry[]> = {}
   const uncategorized: Entry[] = []
-
   entries.forEach(e => {
-    if (e.category) {
-      if (!byCategory[e.category]) byCategory[e.category] = []
-      byCategory[e.category].push(e)
-    } else {
-      uncategorized.push(e)
-    }
+    if (e.category) { if (!byCategory[e.category]) byCategory[e.category] = []; byCategory[e.category].push(e) }
+    else uncategorized.push(e)
   })
 
-  // 카테고리 없음 → 단일 파일
-  if (Object.keys(byCategory).length === 0) {
-    files[base] = await buildFileContent(dateLabel, null, uncategorized)
-    return files
-  }
-
-  // 미분류
-  if (uncategorized.length > 0) {
-    files[base] = await buildFileContent(dateLabel, null, uncategorized)
-  }
-
-  // 카테고리별
+  if (Object.keys(byCategory).length === 0) { files[base] = await buildFileContent(dateLabel, null, uncategorized); return files }
+  if (uncategorized.length > 0) files[base] = await buildFileContent(dateLabel, null, uncategorized)
   for (const [catId, catEntries] of Object.entries(byCategory)) {
     const catLabel = CATEGORIES.find(c => c.id === catId)?.label ?? catId
-
-    // 카테고리만 있고 하나뿐이면 단일 파일
     if (uncategorized.length === 0 && Object.keys(byCategory).length === 1) {
       files[base] = await buildFileContent(dateLabel, catLabel, catEntries)
     } else {
       files[`${base}.${catLabel}`] = await buildFileContent(dateLabel, catLabel, catEntries)
     }
   }
-
   return files
 }
 
@@ -98,37 +63,24 @@ function downloadFile(filename: string, content: string) {
   const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url
-  a.download = `${filename}.md`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  a.href = url; a.download = `${filename}.md`
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
 }
 
 export interface ExportResult { fileCount: number; dayCount: number }
 
-export async function exportEntries(
-  allEntries: Entry[],
-  startDate: string,
-  endDate: string,
-): Promise<ExportResult> {
-  const days = eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) })
+export async function exportEntries(allEntries: Entry[], startDate: string, endDate: string): Promise<ExportResult> {
+  const days = eachDayOfInterval(new Date(startDate), new Date(endDate))
   const allFiles: Record<string, string> = {}
   let dayCount = 0
 
   for (const day of days) {
-    const dateKey = format(day, 'yyyy-MM-dd')
-    const dayStart = startOfDay(day).getTime()
-    const dayEnd = endOfDay(day).getTime()
-    const dayEntries = allEntries.filter(e => {
-      const t = new Date(e.createdAt).getTime()
-      return t >= dayStart && t <= dayEnd
-    })
+    const dateKey = getDateKey(day.toISOString())
+    const s = startOfDay(day).getTime(), e = endOfDay(day).getTime()
+    const dayEntries = allEntries.filter(en => { const t = new Date(en.createdAt).getTime(); return t >= s && t <= e })
     if (dayEntries.length === 0) continue
     dayCount++
-    const files = await buildDayFiles(dateKey, dayEntries)
-    Object.assign(allFiles, files)
+    Object.assign(allFiles, await buildDayFiles(dateKey, dayEntries))
   }
 
   const entries = Object.entries(allFiles)
@@ -136,6 +88,5 @@ export async function exportEntries(
     downloadFile(entries[i][0], entries[i][1])
     if (i < entries.length - 1) await new Promise(r => setTimeout(r, 300))
   }
-
   return { fileCount: entries.length, dayCount }
 }
