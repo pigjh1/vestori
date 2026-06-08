@@ -3,6 +3,8 @@ import type { Entry, FontFamily } from '@/types'
 import { exportEntries, type ExportResult } from '@/utils/exportMd'
 import { clearAllImages, getStorageSize } from '@/lib/imageDB'
 import { useDesign } from '@/hooks/useDesign'
+import { useMoodRecords } from '@/hooks/useMoodRecords'
+import { useRoutine } from '@/hooks/useRoutine'
 import { todayKey, getDateKey, subDays, startOfMonth, endOfMonth, startOfYear, formatDateDot } from '@/utils/date'
 
 type RangePreset = '1d' | '7d' | '30d' | 'month' | 'year' | 'custom'
@@ -53,6 +55,8 @@ interface Props { entries: Entry[] }
 
 export function SettingsPage({ entries }: Props) {
   const today = todayKey()
+  const { entries: moodEntries } = useMoodRecords()
+  const { habits } = useRoutine()
   const { settings, setFont, setAccentHue, reset } = useDesign()
   const [preset, setPreset] = useState<RangePreset>('1d')
   const [customStart, setCustomStart] = useState(today)
@@ -65,6 +69,10 @@ export function SettingsPage({ entries }: Props) {
   const [clearDone, setClearDone] = useState(false)
   const [deleteEntriesConfirm, setDeleteEntriesConfirm] = useState(false)
   const [deleteEntriesDone, setDeleteEntriesDone] = useState(false)
+  const [deleteMoodConfirm, setDeleteMoodConfirm] = useState(false)
+  const [deleteMoodDone, setDeleteMoodDone] = useState(false)
+  const [deleteRoutineConfirm, setDeleteRoutineConfirm] = useState(false)
+  const [deleteRoutineDone, setDeleteRoutineDone] = useState(false)
 
   useEffect(() => { getStorageSize().then(setImageSize) }, [])
 
@@ -77,7 +85,7 @@ export function SettingsPage({ entries }: Props) {
   const handleExport = async () => {
     if (previewCount === 0) return
     setExporting(true); setResult(null); setExportError(null)
-    try { setResult(await exportEntries(entries, startDate, endDate)) }
+    try { setResult(await exportEntries(entries, moodEntries, habits, startDate, endDate)) }
     catch { setExportError('내보내기 중 오류가 발생했어요.') }
     finally { setExporting(false) }
   }
@@ -91,10 +99,24 @@ export function SettingsPage({ entries }: Props) {
 
   const handleDeleteAllEntries = async () => {
     if (!deleteEntriesConfirm) { setDeleteEntriesConfirm(true); return }
-    // App에서 deleteEntry를 여러 번 호출해야 하므로, 여기서는 localStorage 직접 삭제
     localStorage.removeItem('vestori:entries')
     setDeleteEntriesDone(true); setDeleteEntriesConfirm(false)
     setTimeout(() => { setDeleteEntriesDone(false); window.location.reload() }, 2000)
+  }
+
+  const handleDeleteMood = () => {
+    if (!deleteMoodConfirm) { setDeleteMoodConfirm(true); return }
+    localStorage.removeItem('vestori:moods')
+    setDeleteMoodDone(true); setDeleteMoodConfirm(false)
+    setTimeout(() => { setDeleteMoodDone(false); window.location.reload() }, 2000)
+  }
+
+  const handleDeleteRoutine = () => {
+    if (!deleteRoutineConfirm) { setDeleteRoutineConfirm(true); return }
+    localStorage.removeItem('vestori:habits')
+    localStorage.removeItem('vestori:checks')
+    setDeleteRoutineDone(true); setDeleteRoutineConfirm(false)
+    setTimeout(() => { setDeleteRoutineDone(false); window.location.reload() }, 2000)
   }
 
   return (
@@ -243,6 +265,50 @@ export function SettingsPage({ entries }: Props) {
               </div>
             )}
             {clearDone && <p className="font-sans text-[11px] text-accent mt-1">✓ 이미지가 모두 삭제됐어요</p>}
+          </div>
+          <div className="p-4 bg-white border border-paper-border rounded-sm">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="font-sans text-[12px] text-ink-muted mb-0.5">기분 기록</p>
+                <p className="font-sans text-[12px] text-ink-faint"><span className="text-accent">{entries.length}개</span>의 기분 기록</p>
+              </div>
+              {Object.keys(moodEntries).length > 0 && (
+                <button onClick={handleDeleteMood}
+                  className={`font-sans text-[12px] px-3 py-1.5 rounded-sm border transition-all cursor-pointer
+                    ${deleteMoodConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+                  {deleteMoodConfirm ? '정말 삭제' : '전체 삭제'}
+                </button>
+              )}
+            </div>
+            {deleteMoodConfirm && (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="font-sans text-[11px] text-red-400 flex-1">모든 기분 기록이 영구 삭제돼요. 되돌릴 수 없어요.</p>
+                <button onClick={() => setDeleteMoodConfirm(false)} className="font-sans text-[11px] text-ink-faint cursor-pointer border-none bg-none">취소</button>
+              </div>
+            )}
+            {deleteMoodDone && <p className="font-sans text-[11px] text-accent mt-1">✓ 모든 기분 기록이 삭제됐어요</p>}
+          </div>
+          <div className="p-4 bg-white border border-paper-border rounded-sm">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="font-sans text-[12px] text-ink-muted mb-0.5">루틴</p>
+                <p className="font-sans text-[12px] text-ink-faint"><span className="text-accent">{habits.length}개</span>의 루틴</p>
+              </div>
+              {habits.length > 0 && (
+                <button onClick={handleDeleteRoutine}
+                  className={`font-sans text-[12px] px-3 py-1.5 rounded-sm border transition-all cursor-pointer
+                    ${deleteRoutineConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+                  {deleteRoutineConfirm ? '정말 삭제' : '전체 삭제'}
+                </button>
+              )}
+            </div>
+            {deleteRoutineConfirm && (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="font-sans text-[11px] text-red-400 flex-1">모든 루틴이 영구 삭제돼요. 되돌릴 수 없어요.</p>
+                <button onClick={() => setDeleteRoutineConfirm(false)} className="font-sans text-[11px] text-ink-faint cursor-pointer border-none bg-none">취소</button>
+              </div>
+            )}
+            {deleteRoutineDone && <p className="font-sans text-[11px] text-accent mt-1">✓ 모든 루틴이 삭제됐어요</p>}
           </div>
         </div>
       </section>

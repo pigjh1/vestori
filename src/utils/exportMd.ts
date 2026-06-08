@@ -119,7 +119,9 @@ function downloadFile(filename: string, content: string) {
 export interface ExportResult { fileCount: number; dayCount: number }
 
 export async function exportEntries(
-  allEntries: Entry[], 
+  allEntries: Entry[],
+  moodRecords: Record<string, any>,
+  habits: any[],
   startDate: string, 
   endDate: string
 ): Promise<ExportResult> {
@@ -134,6 +136,26 @@ export async function exportEntries(
     if (dayEntries.length === 0) continue
     dayCount++
     Object.assign(allFiles, await buildDayFiles(dateKey, dayEntries))
+  }
+
+  // 기분 기록 내보내기
+  const moodKeys = Object.keys(moodRecords).filter(k => k >= startDate && k <= endDate)
+  if (moodKeys.length > 0) {
+    let moodContent = '# 기분 기록\n\n'
+    moodKeys.sort().forEach(dateKey => {
+      const record = moodRecords[dateKey]
+      moodContent += `## ${dateKey}\n- 기분: ${['매우 좋지 않음', '좋지 않음', '보통', '좋음', '아주 좋음'][record.score - 1]}\n\n`
+    })
+    allFiles['_mood_summary'] = moodContent
+  }
+
+  // 루틴 내보내기
+  if (habits.length > 0) {
+    let routineContent = '# 루틴\n\n'
+    habits.forEach(habit => {
+      routineContent += `- ${habit.name}\n`
+    })
+    allFiles['_routine_summary'] = routineContent
   }
 
   const entries = Object.entries(allFiles)

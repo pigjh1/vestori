@@ -2,6 +2,7 @@ export const CATEGORIES = [
   { id: 'food',        label: '음식' },
   { id: 'place',       label: '장소' },
   { id: 'performance', label: '공연' },
+  { id: 'shopping',    label: '쇼핑' },
 ] as const
 
 export type CategoryId = typeof CATEGORIES[number]['id']
@@ -35,11 +36,12 @@ export interface Entry {
 
 export type MoodScore = 1 | 2 | 3 | 4 | 5
 
-export interface MoodRecord {
-  date: string
+export interface MoodEntry {
+  dateTime: string  // ISO string (YYYY-MM-DD HH:mm)
   score: MoodScore
-  note: string
 }
+
+export type MoodRecord = MoodEntry  // 단일 기분 기록
 
 export interface ThreadPost {
   id: string

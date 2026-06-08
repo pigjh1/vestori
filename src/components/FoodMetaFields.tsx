@@ -14,9 +14,9 @@ export function FoodMetaFields({ value, onChange }: Props) {
   return (
     <div className="flex flex-col gap-3 pt-3 border-t border-paper-border/60">
       <p className="font-sans text-[11px] text-accent tracking-wide">음식 정보</p>
-      {/* 결제금액 */}
+      {/* 금액 */}
       <div className="flex items-center gap-2">
-        <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0">결제금액</span>
+        <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0">금액</span>
         <div className="relative flex-1">
           <input type="number" min={0} step={100} placeholder="0"
             value={value.amount ?? ''}

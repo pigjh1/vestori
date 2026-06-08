@@ -118,52 +118,63 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
     <div className="py-5 border-b border-paper-border animate-fade-slide"
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
 
-      {/* 제목 + 시간 */}
-      <div className="flex items-start justify-between gap-3 mb-1">
-        {entry.title && (
-          <p className="font-sans font-500 text-[15px] text-ink flex-1">{entry.title}</p>
-        )}
-        <span className="font-sans text-[12px] text-ink-faint flex-shrink-0">{formatTime(entry.createdAt)}</span>
-      </div>
-
-      {/* 메타 */}
-      <div className="flex items-center gap-2 mb-2 flex-wrap">
-        {categoryLabel && (
-          <span className="font-sans text-[11px] px-1.5 py-0.5 rounded-sm bg-accent-pale text-accent border border-accent/20">{categoryLabel}</span>
-        )}
-        {entry.location && (
-          <span className="font-sans text-[11px] text-ink-faint">📍 {entry.location}</span>
-        )}
-        {food?.amount != null && (
-          <span className="font-sans text-[11px] text-ink-faint">{formatAmount(food.amount)}</span>
-        )}
-        {food?.rating != null && (
-          <span className="font-sans text-[11px] text-ink-faint">⭐ {formatRating(food.rating)}</span>
-        )}
-      </div>
+      {/* 제목 */}
+      {entry.title && (
+        <p className="font-sans font-500 text-[15px] text-ink mb-2">{entry.title}</p>
+      )}
 
       {/* 본문 */}
       <p className="font-body font-light text-ink leading-[1.85] whitespace-pre-wrap break-words">{entry.text}</p>
-      <ImageGallery imageIds={entry.imageIds} />
 
-      {entry.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2.5">
-          {entry.tags.map(tag => (
-            <button key={tag} onClick={() => onTagClick?.(tag)}
-              className="font-sans text-[12px] text-ink-faint hover:text-accent transition-colors cursor-pointer bg-none border-none p-0">
-              #{tag}
-            </button>
-          ))}
+      {/* 이미지 */}
+      {entry.imageIds.length > 0 && (
+        <div className="mt-3">
+          <ImageGallery imageIds={entry.imageIds} />
         </div>
       )}
 
-      <div className={`flex items-center gap-4 mt-2 transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}>
+      {/* 공통 메타 박스 */}
+      <div className="mt-4 rounded-sm bg-paper-warm px-3 py-2.5 flex flex-col gap-1.5">
+        <div className="font-sans text-[11px] text-ink-faint">⏱ {formatTime(entry.createdAt)}</div>
+        {entry.location && (
+          <div className="font-sans text-[11px] text-ink-faint">📍 {entry.location}</div>
+        )}
+        {entry.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {entry.tags.map(tag => (
+              <button key={tag} onClick={() => onTagClick?.(tag)}
+                className="font-sans text-[11px] text-ink-faint hover:text-accent transition-colors cursor-pointer bg-none border-none p-0">
+                #{tag}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 카테고리 메타 */}
+      {(categoryLabel || food?.amount != null || food?.rating != null) && (
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
+          {categoryLabel && (
+            <span className="font-sans text-[11px] px-1.5 py-0.5 rounded-sm bg-accent-pale text-accent border border-accent/20">{categoryLabel}</span>
+          )}
+          {food?.amount != null && (
+            <span className="font-sans text-[11px] text-ink-faint">{formatAmount(food.amount)}</span>
+          )}
+          {food?.rating != null && (
+            <span className="font-sans text-[11px] text-ink-faint">⭐ {formatRating(food.rating)}</span>
+          )}
+        </div>
+      )}
+
+      {/* 수정/삭제 */}
+      <div className={`flex items-center gap-4 mt-3 transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}>
         <button onClick={startEdit}
           className="font-sans text-[12px] text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">수정</button>
         <button onClick={() => onDelete(entry.id)}
           className="font-sans text-[12px] text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">지우기</button>
       </div>
 
+      {/* 타래 */}
       <ThreadView
         entryId={entry.id}
         posts={posts}

@@ -17,7 +17,7 @@ export function SearchBar({ query, onQueryChange, activeTag, onTagClick, activeC
   return (
     <div className="mb-5 flex flex-col gap-2">
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint text-[13px] pointer-events-none">⌕</span>
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint text-[18px] pointer-events-none leading-none">⌕</span>
         <input type="text" value={query} onChange={e => onQueryChange(e.target.value)}
           placeholder="기록 검색..."
           className="w-full font-sans text-ink bg-white border border-paper-border rounded-sm pl-7 pr-8 py-2 outline-none focus:border-accent-light transition-colors placeholder:text-ink-faint" />

@@ -62,7 +62,7 @@ export function ImageUploader({ entryId, onUploaded, compact = false }: ImageUpl
           <circle cx="5" cy="6.5" r="1.5" stroke="currentColor" strokeWidth="1.1"/>
           <path d="M0.5 10l3-3 3 3 2.5-2L13 10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        <span className="font-sans text-[11px] text-ink-faint">이미지 추가</span>
+        <span className="font-sans text-[11px] text-ink-faint">사진 추가</span>
       </div>
       <input ref={inputRef} type="file" accept={ACCEPTED.join(',')} multiple className="hidden"
         onChange={e => handleFiles(e.target.files)} />

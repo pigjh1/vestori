@@ -128,39 +128,12 @@ export function Composer({ onSubmit }: ComposerProps) {
         {showOptions && (
           <div className="mt-3 flex flex-col gap-3.5 pt-3 border-t border-paper-border">
 
-            {/* 카테고리 */}
-            <div className="flex items-start gap-2">
-              <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">카테고리</span>
-              <div className="flex gap-1.5 flex-wrap">
-                {CATEGORIES.map(({ id, label }) => (
-                  <button key={id}
-                    onClick={() => { setCategory(category === id ? null : id); setFoodMeta({}); if (category === id) setTitle('') }}
-                    className={`font-sans text-[12px] px-2.5 py-1 rounded-sm border transition-all cursor-pointer
-                      ${category === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 제목 - 카테고리 선택 시에만 표시 */}
-            {category && (
-              <div className="flex items-start gap-2">
-                <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">제목</span>
-                <input type="text" value={title} onChange={e => setTitle(e.target.value)}
-                  placeholder="제목을 입력하세요" maxLength={40}
-                  className="flex-1 font-sans text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-1.5 outline-none focus:border-accent-light transition-colors" />
-              </div>
-            )}
-
-            {/* 음식 추가 필드 */}
-            {category === 'food' && <FoodMetaFields value={foodMeta} onChange={setFoodMeta} />}
-
+            {/* 공통 요소: 위치, 태그, 사진, 시간 */}
             {/* 위치 */}
             <div className="flex items-center gap-2">
               <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0">위치</span>
               <div className="flex gap-1.5 flex-1">
-                <input type="text" placeholder="장소명" maxLength={60}
+                <input type="text" placeholder="위치" maxLength={60}
                   value={location} onChange={e => setLocation(e.target.value)}
                   className="flex-1 font-sans text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-1.5 outline-none focus:border-accent-light transition-colors min-w-0" />
                 <button type="button" onClick={getLocation} disabled={locating} title="현재 위치"
@@ -197,15 +170,15 @@ export function Composer({ onSubmit }: ComposerProps) {
               </div>
             </div>
 
-            {/* 이미지 */}
+            {/* 사진 */}
             <div className="flex items-start gap-2">
-              <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">이미지</span>
+              <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">사진</span>
               <div className="flex-1">
                 <ImageUploader entryId={composerEntryId} onUploaded={id => setImageIds(prev => [...prev, id])} />
               </div>
             </div>
 
-            {/* 날짜/시간 */}
+            {/* 시간 */}
             <div className="flex items-start gap-2">
               <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">시간</span>
               <div className="flex flex-col gap-2 flex-1">
@@ -226,6 +199,37 @@ export function Composer({ onSubmit }: ComposerProps) {
                 )}
               </div>
             </div>
+
+            {/* 구분선 */}
+            <div className="h-px bg-paper-border" />
+
+            {/* 카테고리 */}
+            <div className="flex items-start gap-2">
+              <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">카테고리</span>
+              <div className="flex gap-1.5 flex-wrap">
+                {CATEGORIES.map(({ id, label }) => (
+                  <button key={id}
+                    onClick={() => { setCategory(category === id ? null : id); setFoodMeta({}); if (category === id) setTitle('') }}
+                    className={`font-sans text-[12px] px-2.5 py-1 rounded-sm border transition-all cursor-pointer
+                      ${category === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 제목 - 카테고리 선택 시에만 표시 */}
+            {category && (
+              <div className="flex items-start gap-2">
+                <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">제목</span>
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+                  placeholder="제목" maxLength={40}
+                  className="flex-1 font-sans text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-1.5 outline-none focus:border-accent-light transition-colors" />
+              </div>
+            )}
+
+            {/* 음식/쇼핑 금액 필드 */}
+            {(category === 'food' || category === 'shopping') && <FoodMetaFields value={foodMeta} onChange={setFoodMeta} />}
 
           </div>
         )}
