@@ -6,7 +6,7 @@ interface FeedProps {
   entries: Entry[]
   getPosts: (entryId: string) => ThreadPost[]
   onDelete: (id: string) => void
-  onUpdate: (id: string, text: string, category: CategoryId | null, categoryMeta: CategoryMeta, tags: string[], imageIds: string[], location: string) => void
+  onUpdate: (id: string, title: string, text: string, category: CategoryId | null, categoryMeta: CategoryMeta, tags: string[], imageIds: string[], location: string) => void
   onTagClick: (tag: string) => void
   onAddPost: (entryId: string, text: string, imageIds: string[]) => void
   onDeletePost: (id: string) => void

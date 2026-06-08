@@ -41,7 +41,9 @@ const VIEW_ICONS: Record<RecordView, JSX.Element> = {
   ),
 }
 
-const VIEW_LABELS: Record<RecordView, string> = { feed: '피드', calendar: '달력', timeline: '타임라인' }
+const VIEW_LABELS: Record<RecordView, string> = { feed: '기본', calendar: '달력', timeline: '타임라인' }
+
+const VIEW_ORDER: RecordView[] = ['feed', 'timeline', 'calendar']
 
 interface HeaderProps {
   pageMode: AnyPage
@@ -63,7 +65,7 @@ export function Header({ pageMode, recordView, onRecordViewChange }: HeaderProps
         <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
           {pageMode === 'records' && recordView && onRecordViewChange && (
             <div className="flex items-center gap-0.5 bg-paper-warm border border-paper-border rounded-md p-0.5">
-              {(Object.keys(VIEW_ICONS) as RecordView[]).map(v => (
+              {VIEW_ORDER.map(v => (
                 <button key={v} onClick={() => onRecordViewChange(v)} title={VIEW_LABELS[v]}
                   className={`w-7 h-7 flex items-center justify-center rounded-[4px] transition-all cursor-pointer
                     ${recordView === v ? 'bg-white text-accent shadow-sm' : 'text-ink-faint hover:text-ink'}`}>

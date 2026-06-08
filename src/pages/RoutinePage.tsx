@@ -36,7 +36,7 @@ export function RoutinePage() {
   }
 
   return (
-    <div className="max-w-lg">
+    <div>
       <div className="bg-white border border-paper-border rounded-sm p-4 mb-6 relative overflow-hidden">
         <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent rounded-l-sm" />
         <div className="flex items-center justify-between mb-3">

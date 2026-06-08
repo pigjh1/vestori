@@ -19,12 +19,13 @@ function defaultTime() {
 
 interface ComposerProps {
   onSubmit: (
-    text: string, category: CategoryId | null, categoryMeta: CategoryMeta,
+    title: string, text: string, category: CategoryId | null, categoryMeta: CategoryMeta,
     tags: string[], imageIds: string[], location: string, createdAt: string
   ) => void
 }
 
 export function Composer({ onSubmit }: ComposerProps) {
+  const [title, setTitle] = useState('')
   const [text, setText] = useState('')
   const [showOptions, setShowOptions] = useState(false)
   const [category, setCategory] = useState<CategoryId | null>(null)
@@ -32,10 +33,8 @@ export function Composer({ onSubmit }: ComposerProps) {
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [imageIds, setImageIds] = useState<string[]>([])
-  // 위치 (기본 옵션)
   const [location, setLocation] = useState('')
   const [locating, setLocating] = useState(false)
-  // 날짜/시간 분리 입력
   const [useCustomTime, setUseCustomTime] = useState(false)
   const [customDate, setCustomDate] = useState(defaultDate)
   const [customTime, setCustomTime] = useState(defaultTime)
@@ -78,8 +77,8 @@ export function Composer({ onSubmit }: ComposerProps) {
   }, [])
 
   const handleSubmit = useCallback(() => {
-    const trimmed = text.trim()
-    if (!trimmed) return
+    const trimmedText = text.trim()
+    if (!trimmedText) return
     let createdAt: string
     if (useCustomTime) {
       createdAt = new Date(`${customDate}T${customTime}:00`).toISOString()
@@ -87,14 +86,14 @@ export function Composer({ onSubmit }: ComposerProps) {
       createdAt = new Date().toISOString()
     }
     const meta: CategoryMeta = category === 'food' ? { food: foodMeta } : {}
-    onSubmit(trimmed, category, meta, tags, imageIds, location, createdAt)
+    onSubmit(title, trimmedText, category, meta, tags, imageIds, location, createdAt)
     // 초기화
-    setText(''); setCategory(null); setFoodMeta({}); setTags([]); setTagInput('')
+    setTitle(''); setText(''); setCategory(null); setFoodMeta({}); setTags([]); setTagInput('')
     setImageIds([]); setLocation(''); setUseCustomTime(false)
     setCustomDate(defaultDate()); setCustomTime(defaultTime())
     setShowOptions(false)
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
-  }, [text, category, foodMeta, tags, imageIds, location, useCustomTime, customDate, customTime, onSubmit])
+  }, [title, text, category, foodMeta, tags, imageIds, location, useCustomTime, customDate, customTime, onSubmit])
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -135,7 +134,7 @@ export function Composer({ onSubmit }: ComposerProps) {
               <div className="flex gap-1.5 flex-wrap">
                 {CATEGORIES.map(({ id, label }) => (
                   <button key={id}
-                    onClick={() => { setCategory(category === id ? null : id); setFoodMeta({}) }}
+                    onClick={() => { setCategory(category === id ? null : id); setFoodMeta({}); if (category === id) setTitle('') }}
                     className={`font-sans text-[12px] px-2.5 py-1 rounded-sm border transition-all cursor-pointer
                       ${category === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
                     {label}
@@ -144,10 +143,20 @@ export function Composer({ onSubmit }: ComposerProps) {
               </div>
             </div>
 
+            {/* 제목 - 카테고리 선택 시에만 표시 */}
+            {category && (
+              <div className="flex items-start gap-2">
+                <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">제목</span>
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+                  placeholder="제목을 입력하세요" maxLength={40}
+                  className="flex-1 font-sans text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-1.5 outline-none focus:border-accent-light transition-colors" />
+              </div>
+            )}
+
             {/* 음식 추가 필드 */}
             {category === 'food' && <FoodMetaFields value={foodMeta} onChange={setFoodMeta} />}
 
-            {/* 위치 (기본 옵션) */}
+            {/* 위치 */}
             <div className="flex items-center gap-2">
               <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0">위치</span>
               <div className="flex gap-1.5 flex-1">
@@ -196,7 +205,7 @@ export function Composer({ onSubmit }: ComposerProps) {
               </div>
             </div>
 
-            {/* 날짜 / 시간 분리 */}
+            {/* 날짜/시간 */}
             <div className="flex items-start gap-2">
               <span className="font-sans text-[11px] text-ink-faint w-14 flex-shrink-0 pt-1">시간</span>
               <div className="flex flex-col gap-2 flex-1">

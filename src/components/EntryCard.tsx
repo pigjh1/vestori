@@ -11,7 +11,7 @@ interface EntryCardProps {
   entry: Entry
   posts: ThreadPost[]
   onDelete: (id: string) => void
-  onUpdate: (id: string, text: string, category: CategoryId | null, categoryMeta: CategoryMeta, tags: string[], imageIds: string[], location: string) => void
+  onUpdate: (id: string, title: string, text: string, category: CategoryId | null, categoryMeta: CategoryMeta, tags: string[], imageIds: string[], location: string) => void
   onTagClick?: (tag: string) => void
   onAddPost: (entryId: string, text: string, imageIds: string[]) => void
   onDeletePost: (id: string) => void
@@ -23,6 +23,7 @@ function formatRating(r: number) { return r % 1 === 0 ? `${r}.0` : `${r}` }
 export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddPost, onDeletePost }: EntryCardProps) {
   const [hovered, setHovered] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState(entry.title)
   const [editText, setEditText] = useState(entry.text)
   const [editCategory, setEditCategory] = useState<CategoryId | null>(entry.category)
   const [editFoodMeta, setEditFoodMeta] = useState<Partial<FoodMeta>>(entry.categoryMeta?.food ?? {})
@@ -35,16 +36,16 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
   const food = entry.categoryMeta?.food
 
   const startEdit = () => {
-    setEditText(entry.text); setEditCategory(entry.category)
+    setEditTitle(entry.title); setEditText(entry.text); setEditCategory(entry.category)
     setEditFoodMeta(entry.categoryMeta?.food ?? {})
     setEditTags(entry.tags); setEditImageIds(entry.imageIds)
     setEditLocation(entry.location); setEditing(true)
   }
 
   const saveEdit = () => {
-    if (!editText.trim()) return
+    if (!editText.trim() && !editTitle.trim()) return
     const meta: CategoryMeta = editCategory === 'food' ? { food: editFoodMeta } : {}
-    onUpdate(entry.id, editText.trim(), editCategory, meta, editTags, editImageIds, editLocation)
+    onUpdate(entry.id, editTitle.trim(), editText.trim(), editCategory, meta, editTags, editImageIds, editLocation)
     setEditing(false)
   }
 
@@ -61,6 +62,9 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
 
   if (editing) return (
     <div className="py-5 border-b border-paper-border">
+      <input type="text" placeholder="제목" value={editTitle} onChange={e => setEditTitle(e.target.value)} maxLength={60}
+        className="w-full border-none outline-none bg-transparent font-sans font-500 text-ink text-[16px] mb-2 placeholder:text-ink-faint" />
+      
       <div className="flex gap-1.5 mb-3 flex-wrap">
         {CATEGORIES.map(({ id, label }) => (
           <button key={id}
@@ -79,8 +83,7 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
       <textarea value={editText} onChange={e => setEditText(e.target.value)} autoFocus rows={4}
         className="w-full border border-paper-border rounded-sm px-3 py-2 font-body font-light text-ink bg-paper-warm outline-none focus:border-accent-light resize-none leading-[1.85] transition-colors" />
 
-      {/* 위치 편집 */}
-      <input type="text" placeholder="위치 (선택)" value={editLocation}
+      <input type="text" placeholder="위치" value={editLocation}
         onChange={e => setEditLocation(e.target.value)} maxLength={60}
         className="mt-2 w-full font-sans text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-1.5 outline-none focus:border-accent-light transition-colors" />
 
@@ -115,9 +118,16 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
     <div className="py-5 border-b border-paper-border animate-fade-slide"
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
 
+      {/* 제목 + 시간 */}
+      <div className="flex items-start justify-between gap-3 mb-1">
+        {entry.title && (
+          <p className="font-sans font-500 text-[15px] text-ink flex-1">{entry.title}</p>
+        )}
+        <span className="font-sans text-[12px] text-ink-faint flex-shrink-0">{formatTime(entry.createdAt)}</span>
+      </div>
+
       {/* 메타 */}
       <div className="flex items-center gap-2 mb-2 flex-wrap">
-        <span className="font-sans text-[12px] text-ink-faint">{formatTime(entry.createdAt)}</span>
         {categoryLabel && (
           <span className="font-sans text-[11px] px-1.5 py-0.5 rounded-sm bg-accent-pale text-accent border border-accent/20">{categoryLabel}</span>
         )}
@@ -132,6 +142,7 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
         )}
       </div>
 
+      {/* 본문 */}
       <p className="font-body font-light text-ink leading-[1.85] whitespace-pre-wrap break-words">{entry.text}</p>
       <ImageGallery imageIds={entry.imageIds} />
 
@@ -153,7 +164,6 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
           className="font-sans text-[12px] text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">지우기</button>
       </div>
 
-      {/* 타래 */}
       <ThreadView
         entryId={entry.id}
         posts={posts}

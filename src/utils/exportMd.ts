@@ -1,22 +1,17 @@
 import type { Entry } from '@/types'
 import { CATEGORIES } from '@/types'
 import { getImages, bufferToBase64 } from '@/lib/imageDB'
-import { getDateKey, formatDateFull, formatTime, startOfDay, endOfDay, eachDayOfInterval, pad } from '@/utils/date'
+import { getDateKey, formatDateFull, formatTime, startOfDay, endOfDay, eachDayOfInterval } from '@/utils/date'
 
 async function entryToMd(entry: Entry): Promise<string> {
   const lines: string[] = []
-  
-  // 시간 — 타임라인 강조
   const timeStr = formatTime(entry.createdAt)
   lines.push(`---`)
   lines.push(`**${timeStr}**`)
   lines.push(`---`)
   lines.push('')
-  
-  // 본문
   lines.push(entry.text)
 
-  // 메타 정보
   const food = entry.categoryMeta?.food
   const metaParts = []
   if (entry.location) metaParts.push(`📍 ${entry.location}`)
@@ -24,15 +19,12 @@ async function entryToMd(entry: Entry): Promise<string> {
   if (food?.rating != null) metaParts.push(`⭐ ${food.rating}/5`)
   if (metaParts.length > 0) { lines.push(''); lines.push(metaParts.join('  ')) }
 
-  // 이미지
   if (entry.imageIds.length > 0) {
     const images = await getImages(entry.imageIds)
     images.forEach((img, i) => { lines.push(''); lines.push(`![이미지 ${i + 1}](${bufferToBase64(img.data, img.mimeType)})`) })
   }
 
-  // 태그
   if (entry.tags.length > 0) { lines.push(''); lines.push(entry.tags.map(t => `\`#${t}\``).join(' ')) }
-  
   return lines.join('\n')
 }
 
@@ -46,23 +38,28 @@ async function buildFileContent(dateLabel: string, categoryLabel: string | null,
   return lines.join('\n')
 }
 
-// 날짜 파일명: YYYY.MM.DD.요일.md
+// 날짜 파일명: YYYY.MM.DD.요일.md (카테고리 없을 때)
 function formatDateFileName(dateKey: string): string {
-  const d = new Date(dateKey)
-  const yyyy = d.getFullYear()
-  const mm = pad(d.getMonth() + 1)
-  const dd = pad(d.getDate())
+  const parts = dateKey.split('-')
+  const yyyy = parts[0]
+  const mm = parts[1]
+  const dd = parts[2]
+  
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
   const KO_DAYS = ['일','월','화','수','목','금','토']
   const dayName = KO_DAYS[d.getDay()]
+  
   return `${yyyy}.${mm}.${dd}.${dayName}`
 }
 
 // 카테고리 파일명: YYMMDD - 제목.md
 function formatCategoryFileName(dateKey: string, title: string): string {
-  const d = new Date(dateKey)
-  const yy = String(d.getFullYear()).slice(2)
-  const mm = pad(d.getMonth() + 1)
-  const dd = pad(d.getDate())
+  const parts = dateKey.split('-')
+  const yyyy = parts[0]
+  const mm = parts[1]
+  const dd = parts[2]
+  
+  const yy = yyyy.slice(2)
   const yymmdd = `${yy}${mm}${dd}`
   const truncated = title.length > 40 ? title.slice(0, 40) : title
   return `${yymmdd} - ${truncated}`.replace(/[/\\:*?"<>|]/g, '_')
@@ -85,35 +82,26 @@ async function buildDayFiles(dateKey: string, entries: Entry[]): Promise<Record<
   })
 
   const catCount = Object.keys(byCategory).length
-  const hasUncategorized = uncategorized.length > 0
 
-  // 케이스 1: 카테고리 없음만 (또는 기록 하나)
+  // 카테고리 없음만 → 날짜 파일명
   if (catCount === 0) {
     const fileName = formatDateFileName(dateKey)
     files[fileName] = await buildFileContent(dateLabel, null, uncategorized)
     return files
   }
 
-  // 케이스 2: 카테고리 하나만 있고 uncategorized 없음 → 날짜 파일명
-  if (catCount === 1 && !hasUncategorized) {
-    const [catId, catEntries] = Object.entries(byCategory)[0]
-    const catLabel = CATEGORIES.find(c => c.id === catId)?.label ?? catId
+  // 카테고리가 있음
+  // uncategorized가 있으면 → 항상 날짜 파일명으로
+  if (uncategorized.length > 0) {
     const fileName = formatDateFileName(dateKey)
-    files[fileName] = await buildFileContent(dateLabel, catLabel, catEntries)
-    return files
-  }
-
-  // 케이스 3: 여러 카테고리 또는 uncategorized + 카테고리 섞임 → 카테고리별 파일
-  // uncategorized 처리
-  if (hasUncategorized) {
-    const fileName = formatCategoryFileName(dateKey, '기타')
     files[fileName] = await buildFileContent(dateLabel, null, uncategorized)
   }
 
-  // 카테고리별 파일
+  // 카테고리별 → 각각 YYMMDD - 제목 형식 파일
   for (const [catId, catEntries] of Object.entries(byCategory)) {
     const catLabel = CATEGORIES.find(c => c.id === catId)?.label ?? catId
-    const fileName = formatCategoryFileName(dateKey, catLabel)
+    const title = catEntries[0]?.title || catLabel
+    const fileName = formatCategoryFileName(dateKey, title)
     files[fileName] = await buildFileContent(dateLabel, catLabel, catEntries)
   }
 

@@ -86,7 +86,7 @@ export function App() {
 
         {anyPage === 'records' && (
           <>
-            <Composer onSubmit={addEntry} />
+            <Composer onSubmit={(title, text, category, meta, tags, ids, loc, time) => addEntry(title, text, category, meta, tags, ids, loc, time)} />
             <SearchBar
               query={query} onQueryChange={setQuery}
               activeTag={activeTag} onTagClick={toggleTag}

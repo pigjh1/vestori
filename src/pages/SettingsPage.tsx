@@ -32,9 +32,13 @@ function formatBytes(b: number): string {
 }
 
 const FONT_OPTIONS: { id: FontFamily; label: string; family: string }[] = [
-  { id: 'sans',      label: 'Noto Sans (기본)', family: '"Noto Sans KR", sans-serif' },
-  { id: 'grotesque', label: 'Outfit (기하)',    family: '"Outfit", "Noto Sans KR", sans-serif' },
-  { id: 'mono',      label: 'Mono (코드)',      family: '"JetBrains Mono", monospace' },
+  { id: 'noto-sans', label: '노토산스', family: '"Noto Sans KR", sans-serif' },
+  { id: 'noto-serif', label: '노토세리프', family: '"Noto Serif KR", serif' },
+  { id: 'gowun-batang', label: '고운바탕', family: '"Gowun Batang", serif' },
+  { id: 'gowun-dodum', label: '고운돋움', family: '"Gowun Dodum", sans-serif' },
+  { id: 'noto-brush', label: '손글씨(붓)', family: '"Nanum Brush Script", cursive' },
+  { id: 'noto-pen', label: '손글씨(펜)', family: '"Nanum Pen Script", cursive' },
+  { id: 'jetbrains-mono', label: '모노스페이스', family: '"JetBrains Mono", monospace' },
 ]
 
 const HUE_PRESETS = [
@@ -94,7 +98,7 @@ export function SettingsPage({ entries }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-10 max-w-lg">
+    <div className="flex flex-col gap-10">
 
       {/* ── 디자인 ── */}
       <section>
@@ -182,7 +186,7 @@ export function SettingsPage({ entries }: Props) {
           </p>
         </div>
 
-<button onClick={handleExport} disabled={exporting || previewCount === 0}
+        <button onClick={handleExport} disabled={exporting || previewCount === 0}
           className="w-full bg-ink text-white font-sans text-[13px] py-3 rounded-sm hover:bg-accent transition-colors disabled:opacity-40 cursor-pointer">
           {exporting ? '내보내는 중...' : `${previewCount}개 기록 내보내기`}
         </button>
