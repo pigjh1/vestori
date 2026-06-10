@@ -63,14 +63,13 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
   if (editing) return (
     <div className="py-5 border-b border-paper-border">
       <input type="text" placeholder="제목" value={editTitle} onChange={e => setEditTitle(e.target.value)} maxLength={60}
-        className="w-full border-none outline-none bg-transparent font-sans font-500 text-ink text-[16px] mb-2 placeholder:text-ink-faint" />
+        className="w-full border-none outline-none bg-transparent font-500 text-ink text-base mb-2 placeholder:text-ink-faint" />
       
       <div className="flex gap-1.5 mb-3 flex-wrap">
         {CATEGORIES.map(({ id, label }) => (
           <button key={id}
             onClick={() => { setEditCategory(editCategory === id ? null : id); setEditFoodMeta({}) }}
-            className={`font-sans text-[12px] px-2.5 py-1 rounded-sm border transition-all cursor-pointer
-              ${editCategory === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+            className={`btn-sm btn-on`}>
             {label}
           </button>
         ))}
@@ -81,11 +80,11 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
       )}
 
       <textarea value={editText} onChange={e => setEditText(e.target.value)} autoFocus rows={4}
-        className="w-full border border-paper-border rounded-sm px-3 py-2 font-body font-light text-ink bg-paper-warm outline-none focus:border-accent-light resize-none leading-[1.85] transition-colors" />
+        className="w-full border border-paper-border rounded-sm px-3 py-2 font-light text-ink bg-paper-warm outline-none focus:border-ink/30 resize-none leading-[1.85] transition-colors" />
 
       <input type="text" placeholder="위치" value={editLocation}
         onChange={e => setEditLocation(e.target.value)} maxLength={60}
-        className="mt-2 w-full font-sans text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-1.5 outline-none focus:border-accent-light transition-colors" />
+        className="mt-2 w-full text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-1.5 outline-none focus:border-ink/30 transition-colors" />
 
       <ImageGallery imageIds={editImageIds} editable
         onRemove={id => setEditImageIds(prev => prev.filter(i => i !== id))} />
@@ -95,36 +94,36 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
 
       <div className="flex flex-wrap gap-1.5 items-center mt-2">
         {editTags.map(tag => (
-          <span key={tag} className="inline-flex items-center gap-1 font-sans text-[11px] px-2 py-0.5 rounded-sm bg-accent-pale text-accent border border-accent/20">
+          <span key={tag} className="inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-sm bg-ink/8 text-ink border border-ink/15">
             #{tag}
             <button onClick={() => setEditTags(prev => prev.filter(t => t !== tag))} className="text-accent/60 hover:text-accent cursor-pointer">×</button>
           </span>
         ))}
         <input value={tagInput} onChange={e => setTagInput(e.target.value)}
           onKeyDown={handleTagKeyDown} placeholder="태그 추가"
-          className="font-sans bg-transparent outline-none placeholder:text-ink-faint border-b border-paper-border focus:border-accent-light py-0.5 min-w-[80px] transition-colors" />
+          className="bg-transparent outline-none placeholder:text-ink-faint border-b border-paper-border focus:border-ink/30 py-0.5 min-w-[80px] transition-colors" />
       </div>
 
       <div className="flex gap-3 mt-3">
         <button onClick={saveEdit}
-          className="font-sans text-[13px] bg-ink text-white px-3 py-1.5 rounded-sm hover:bg-accent transition-colors cursor-pointer">저장</button>
+          className="text-sm bg-ink text-white px-3 py-1.5 rounded-sm hover:opacity-75 transition-colors cursor-pointer">저장</button>
         <button onClick={() => setEditing(false)}
-          className="font-sans text-[13px] text-ink-faint border border-paper-border px-3 py-1.5 rounded-sm cursor-pointer">취소</button>
+          className="text-sm text-ink-faint border border-paper-border px-3 py-1.5 rounded-sm cursor-pointer">취소</button>
       </div>
     </div>
   )
 
   return (
-    <div className="py-5 border-b border-paper-border animate-fade-slide"
+    <div className="bg-paper-card border border-paper-border rounded-sm px-4 py-4 animate-fade-slide"
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
 
       {/* 제목 */}
       {entry.title && (
-        <p className="font-sans font-500 text-[15px] text-ink mb-2">{entry.title}</p>
+        <p className="font-500 text-base text-ink mb-2">{entry.title}</p>
       )}
 
       {/* 본문 */}
-      <p className="font-body font-light text-ink leading-[1.85] whitespace-pre-wrap break-words">{entry.text}</p>
+      <p className="font-light text-ink leading-[1.85] whitespace-pre-wrap break-words">{entry.text}</p>
 
       {/* 이미지 */}
       {entry.imageIds.length > 0 && (
@@ -133,45 +132,35 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
         </div>
       )}
 
-      {/* 공통 메타 박스 */}
-      <div className="mt-4 rounded-sm bg-paper-warm px-3 py-2.5 flex flex-col gap-1.5">
-        <div className="font-sans text-[11px] text-ink-faint">⏱ {formatTime(entry.createdAt)}</div>
+      {/* 공통 메타 + 카테고리 — 구분선 + 인라인 한 줄 */}
+      <div className="mt-4 pt-3 border-t border-paper-border flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <span className="text-sm text-ink-faint">⏱ {formatTime(entry.createdAt)}</span>
         {entry.location && (
-          <div className="font-sans text-[11px] text-ink-faint">📍 {entry.location}</div>
+          <span className="text-sm text-ink-faint">📍 {entry.location}</span>
         )}
-        {entry.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {entry.tags.map(tag => (
-              <button key={tag} onClick={() => onTagClick?.(tag)}
-                className="font-sans text-[11px] text-ink-faint hover:text-accent transition-colors cursor-pointer bg-none border-none p-0">
-                #{tag}
-              </button>
-            ))}
-          </div>
+        {categoryLabel && (
+          <span className="text-sm text-ink-muted border border-paper-border rounded-sm px-1.5 py-0.5">{categoryLabel}</span>
         )}
+        {food?.amount != null && (
+          <span className="text-sm text-ink-faint">{formatAmount(food.amount)}</span>
+        )}
+        {food?.rating != null && (
+          <span className="text-sm text-ink-faint">⭐ {formatRating(food.rating)}</span>
+        )}
+        {entry.tags.length > 0 && entry.tags.map(tag => (
+          <button key={tag} onClick={() => onTagClick?.(tag)}
+            className="text-sm text-ink-faint hover:text-ink transition-colors cursor-pointer bg-none border-none p-0">
+            #{tag}
+          </button>
+        ))}
       </div>
-
-      {/* 카테고리 메타 */}
-      {(categoryLabel || food?.amount != null || food?.rating != null) && (
-        <div className="mt-2 flex items-center gap-2 flex-wrap">
-          {categoryLabel && (
-            <span className="font-sans text-[11px] px-1.5 py-0.5 rounded-sm bg-accent-pale text-accent border border-accent/20">{categoryLabel}</span>
-          )}
-          {food?.amount != null && (
-            <span className="font-sans text-[11px] text-ink-faint">{formatAmount(food.amount)}</span>
-          )}
-          {food?.rating != null && (
-            <span className="font-sans text-[11px] text-ink-faint">⭐ {formatRating(food.rating)}</span>
-          )}
-        </div>
-      )}
 
       {/* 수정/삭제 */}
       <div className={`flex items-center gap-4 mt-3 transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}>
         <button onClick={startEdit}
-          className="font-sans text-[12px] text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">수정</button>
+          className="text-xs text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">수정</button>
         <button onClick={() => onDelete(entry.id)}
-          className="font-sans text-[12px] text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">지우기</button>
+          className="text-xs text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">지우기</button>
       </div>
 
       {/* 타래 */}

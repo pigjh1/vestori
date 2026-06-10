@@ -5,12 +5,19 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['var(--font-serif)'],
+        serif: ['var(--font-body)'],
         body:  ['var(--font-body)'],
-        sans:  ['"Noto Sans KR"', 'sans-serif'],
+        sans:  ['var(--font-body)'],
+      },
+      fontSize: {
+        'xs':   ['12px', { lineHeight: '1.5' }],
+        'sm':   ['14px', { lineHeight: '1.55' }],
+        'base': ['16px', { lineHeight: '1.75' }],
+        'lg':   ['19px', { lineHeight: '1.4' }],
+        'xl':   ['23px', { lineHeight: '1.3' }],
       },
       colors: {
-        paper:  { DEFAULT: 'var(--color-paper)', warm: 'var(--color-paper-warm)', border: 'var(--color-paper-border)' },
+        paper:  { DEFAULT: 'var(--color-paper)', warm: 'var(--color-paper-warm)', border: 'var(--color-paper-border)', card: 'var(--color-paper-card)' },
         ink:    { DEFAULT: 'var(--color-ink)', muted: 'var(--color-ink-muted)', faint: 'var(--color-ink-faint)' },
         accent: { DEFAULT: 'var(--color-accent)', light: 'var(--color-accent-light)', pale: 'var(--color-accent-pale)' },
       },

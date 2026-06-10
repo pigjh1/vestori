@@ -39,7 +39,7 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
 
   if (!open) return (
     <button onClick={() => setOpen(true)}
-      className="mt-2.5 font-sans text-[12px] text-ink-faint hover:text-accent transition-colors cursor-pointer bg-none border-none p-0 flex items-center gap-1.5">
+      className="mt-2.5 text-sm text-ink-faint hover:text-accent transition-colors cursor-pointer bg-none border-none p-0 flex items-center gap-1.5">
       <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
         <path d="M1 1h11v8H7.5L5 11.5V9H1V1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
       </svg>
@@ -62,15 +62,15 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
               {/* 포스트 내용 */}
               <div className="flex-1 pb-3 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-sans text-[11px] text-ink-faint">{formatPostTime(post.createdAt)}</span>
+                  <span className="text-xs text-ink-faint">{formatPostTime(post.createdAt)}</span>
                   <button
                     onClick={() => onDelete(post.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity font-sans text-[11px] text-ink-faint hover:text-accent cursor-pointer bg-none border-none p-0 ml-auto">
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-ink-faint hover:text-accent cursor-pointer bg-none border-none p-0 ml-auto">
                     삭제
                   </button>
                 </div>
                 {post.text && (
-                  <p className="font-body text-[14px] font-light text-ink leading-[1.7] whitespace-pre-wrap break-words">
+                  <p className="text-sm font-light text-ink leading-[1.7] whitespace-pre-wrap break-words">
                     {post.text}
                   </p>
                 )}
@@ -101,7 +101,7 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
             placeholder="이어서 기록하기..."
             rows={2}
             maxLength={500}
-            className="w-full font-body font-light text-ink bg-transparent border-b border-paper-border outline-none focus:border-accent-light resize-none placeholder:text-ink-faint transition-colors pb-1"
+            className="w-full font-light text-ink bg-transparent border-b border-paper-border outline-none focus:border-ink/30 resize-none placeholder:text-ink-faint transition-colors pb-1"
           />
 
           {imageIds.length > 0 && (
@@ -121,11 +121,11 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
             </div>
             <div className="flex gap-2 ml-auto">
               <button onClick={() => { setOpen(false); setText(''); setImageIds([]) }}
-                className="font-sans text-[12px] text-ink-faint hover:text-ink border border-paper-border px-2.5 py-1 rounded-sm cursor-pointer transition-colors">
+                className="text-xs text-ink-faint hover:text-ink border border-paper-border px-2.5 py-1 rounded-sm cursor-pointer transition-colors">
                 닫기
               </button>
               <button onClick={handleAdd} disabled={!text.trim() && imageIds.length === 0}
-                className="font-sans text-[12px] bg-ink text-white px-3 py-1 rounded-sm hover:bg-accent transition-colors cursor-pointer disabled:opacity-40">
+                className="text-xs bg-ink text-white px-3 py-1 rounded-sm hover:opacity-75 transition-colors cursor-pointer disabled:opacity-40">
                 추가
               </button>
             </div>

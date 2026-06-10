@@ -1,14 +1,15 @@
 import { todayKey, formatDateFull } from '@/utils/date'
 import type { PageMode, RecordView } from '@/hooks/useFilter'
 
-type AnyPage = PageMode | 'stats'
+type AnyPage = PageMode
 
 const PAGE_TITLES: Record<AnyPage, { title: string; sub: string }> = {
-  records:  { title: '기록',    sub: '삶의 흔적이 이야기가 되는 공간' },
-  mood:     { title: '기분',    sub: '하루하루의 감정을 추적해요' },
-  routine:  { title: '루틴',    sub: '매일의 습관을 만들어가요' },
-  settings: { title: '설정',    sub: '디자인 · 내보내기 · 데이터' },
-  stats:    { title: '통계',    sub: '기록이 만들어낸 패턴들' },
+  records:    { title: '기록',    sub: '삶의 흔적이 이야기가 되는 공간' },
+  mood:       { title: '기분',    sub: '하루하루의 감정을 추적해요' },
+  routine:    { title: '루틴',    sub: '매일의 습관을 만들어가요' },
+  diet:       { title: '식단',    sub: '하루 먹은 것을 기록해요' },
+  retrospect: { title: '회고',    sub: '지나온 시간을 돌아보는 공간' },
+  settings:   { title: '설정',    sub: '디자인 · 내보내기 · 데이터' },
 }
 
 const VIEW_ICONS: Record<RecordView, JSX.Element> = {
@@ -59,8 +60,8 @@ export function Header({ pageMode, recordView, onRecordViewChange }: HeaderProps
     <header className="pt-8 pb-6 mb-6 border-b border-paper-border">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="font-serif text-[24px] italic text-ink tracking-tight leading-none mb-1.5">{title}</h2>
-          <p className="font-sans text-[11px] text-ink-faint tracking-[0.05em] leading-snug">{sub}</p>
+          <h2 className="text-xl italic text-ink tracking-tight leading-none mb-1.5">{title}</h2>
+          <p className="text-xs text-ink-faint tracking-[0.05em] leading-snug">{sub}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
           {pageMode === 'records' && recordView && onRecordViewChange && (
@@ -68,13 +69,13 @@ export function Header({ pageMode, recordView, onRecordViewChange }: HeaderProps
               {VIEW_ORDER.map(v => (
                 <button key={v} onClick={() => onRecordViewChange(v)} title={VIEW_LABELS[v]}
                   className={`w-7 h-7 flex items-center justify-center rounded-[4px] transition-all cursor-pointer
-                    ${recordView === v ? 'bg-white text-accent shadow-sm' : 'text-ink-faint hover:text-ink'}`}>
+                    ${recordView === v ? 'bg-paper-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink'}`}>
                   {VIEW_ICONS[v]}
                 </button>
               ))}
             </div>
           )}
-          <span className="font-sans text-[10px] text-ink-faint hidden sm:block">{today}</span>
+          <span className="text-xs text-ink-faint hidden sm:block">{today}</span>
         </div>
       </div>
     </header>

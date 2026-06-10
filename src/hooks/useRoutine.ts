@@ -31,8 +31,12 @@ function calcStreak(habitId: string, checks: CheckMap): number {
   return streak
 }
 
+const DEFAULT_HABITS: Habit[] = [
+  '물 마시기', '운동', '일기쓰기', '손톱관리', '영양제', '책읽기'
+].map(name => ({ id: uuidv4(), name, createdAt: new Date().toISOString(), streak: 0 }))
+
 export function useRoutine() {
-  const [habits, setHabits] = useState<Habit[]>(() => load(HABITS_KEY, []))
+  const [habits, setHabits] = useState<Habit[]>(() => load(HABITS_KEY, DEFAULT_HABITS))
   const [checks, setChecks] = useState<CheckMap>(() => load(CHECKS_KEY, {}))
 
   useEffect(() => { try { localStorage.setItem(HABITS_KEY, JSON.stringify(habits)) } catch {} }, [habits])

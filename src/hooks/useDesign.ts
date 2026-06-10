@@ -26,29 +26,30 @@ function loadSettings(): DesignSettings {
 
 function applyDesign(settings: DesignSettings) {
   const root = document.documentElement
-  
-  // 파스텔톤 배경색 (매우 낮은 채도, 높은 명도)
-  const paperBg = `hsl(${settings.accentHue},12%,96%)`
-  const paperWarm = `hsl(${settings.accentHue},10%,93%)`
-  const paperBorder = `hsl(${settings.accentHue},15%,85%)`
-  
-  root.style.setProperty('--color-paper', paperBg)
-  root.style.setProperty('--color-paper-warm', paperWarm)
-  root.style.setProperty('--color-paper-border', paperBorder)
-  
-  // 파스텔톤 accent 색상 (낮은 채도, 높은 명도)
-  const hsl = `hsl(${settings.accentHue},28%,62%)`
-  const hslLight = `hsl(${settings.accentHue},32%,70%)`
-  const hslPale = `hsl(${settings.accentHue},35%,94%)`
-  
-  root.style.setProperty('--color-accent', hsl)
-  root.style.setProperty('--color-accent-light', hslLight)
-  root.style.setProperty('--color-accent-pale', hslPale)
-  
+  const h = settings.accentHue
+  const isDark = root.classList.contains('dark')
+
+  // 파스텔 accent
+  root.style.setProperty('--color-accent',        `hsl(${h}, 40%, ${isDark ? 72 : 68}%)`)
+  root.style.setProperty('--color-accent-light',   `hsl(${h}, 38%, ${isDark ? 80 : 76}%)`)
+  root.style.setProperty('--color-accent-pale',    `hsl(${h}, 30%, ${isDark ? 18 : 95}%)`)
+
+  // 배경색 (라이트/다크 분기)
+  if (isDark) {
+    root.style.setProperty('--color-paper',        `hsl(${h}, 8%, 10%)`)
+    root.style.setProperty('--color-paper-warm',   `hsl(${h}, 8%, 13%)`)
+    root.style.setProperty('--color-paper-border', `hsl(${h}, 10%, 20%)`)
+    root.style.setProperty('--color-paper-card',   `hsl(${h}, 8%, 15%)`)
+  } else {
+    root.style.setProperty('--color-paper',        `hsl(${h}, 10%, 97%)`)
+    root.style.setProperty('--color-paper-warm',   `hsl(${h}, 10%, 94%)`)
+    root.style.setProperty('--color-paper-border', `hsl(${h}, 12%, 87%)`)
+    root.style.setProperty('--color-paper-card',   '#ffffff')
+  }
+
   // 폰트
   const fontFamily = FONT_MAP[settings.font] || FONT_MAP['noto-sans']
   root.style.setProperty('--font-body', fontFamily)
-  root.style.setProperty('--font-serif', '"Noto Serif KR", serif')
 }
 
 export function useDesign() {

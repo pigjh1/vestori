@@ -6,9 +6,10 @@ import { SearchBar } from '@/components/SearchBar'
 import { Feed } from '@/components/Feed'
 import { CalendarMonth } from '@/components/CalendarMonth'
 import { CalendarTimeline } from '@/components/CalendarTimeline'
-import { Stats } from '@/components/Stats'
 import { MoodPage } from '@/pages/MoodPage'
 import { RoutinePage } from '@/pages/RoutinePage'
+import { DietPage } from '@/pages/DietPage'
+import { RetrospectPage } from '@/pages/RetrospectPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { useEntries } from '@/hooks/useEntries'
 import { useFilter, type PageMode } from '@/hooks/useFilter'
@@ -17,7 +18,7 @@ import { useDarkMode } from '@/hooks/useDarkMode'
 import { useDesign } from '@/hooks/useDesign'
 import { getDateKey } from '@/utils/date'
 
-type AnyPage = PageMode | 'stats'
+type AnyPage = PageMode
 
 export function App() {
   const { dark, toggle: toggleDark } = useDarkMode()
@@ -35,7 +36,7 @@ export function App() {
 
   const handleSelect = (p: AnyPage) => {
     setAnyPage(p)
-    if (p !== 'stats') setPageMode(p as PageMode)
+    setPageMode(p)
     setSelectedDateKey(null)
   }
 
@@ -77,7 +78,7 @@ export function App() {
 
       <div className="max-w-[680px] mx-auto px-4 sm:px-8 pb-24">
         <div className="flex items-center justify-between pt-4 sm:hidden">
-          <span className="font-serif text-[20px] italic text-accent">Vestori</span>
+          <span className="text-xl italic text-ink">Vestori</span>
           <DarkToggle />
         </div>
 
@@ -106,10 +107,11 @@ export function App() {
           </>
         )}
 
-        {anyPage === 'mood'     && <MoodPage />}
-        {anyPage === 'routine'  && <RoutinePage />}
-        {anyPage === 'stats'    && <Stats entries={entries} />}
-        {anyPage === 'settings' && <SettingsPage entries={entries} />}
+        {anyPage === 'mood'       && <MoodPage />}
+        {anyPage === 'routine'    && <RoutinePage />}
+        {anyPage === 'diet'       && <DietPage />}
+        {anyPage === 'retrospect' && <RetrospectPage />}
+        {anyPage === 'settings'   && <SettingsPage entries={entries} />}
       </div>
 
       <BottomNav pageMode={anyPage} onSelect={handleSelect} />

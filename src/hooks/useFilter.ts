@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { Entry, CategoryId } from '@/types'
 
-export type PageMode = 'records' | 'mood' | 'routine' | 'settings'
+export type PageMode = 'records' | 'mood' | 'routine' | 'diet' | 'retrospect' | 'settings'
 export type RecordView = 'feed' | 'calendar' | 'timeline'
 
 export function useFilter(entries: Entry[]) {

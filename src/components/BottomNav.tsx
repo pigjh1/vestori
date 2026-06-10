@@ -1,6 +1,6 @@
 import type { PageMode } from '@/hooks/useFilter'
 
-type AnyPage = PageMode | 'stats'
+type AnyPage = PageMode
 
 const Icons = {
   records: (
@@ -26,11 +26,18 @@ const Icons = {
       <path d="M13.5 16L15.2 17.8L18.5 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
-  stats: (
+  diet: (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <rect x="3" y="13" width="4" height="6" rx="0.5" fill="currentColor" opacity="0.4"/>
-      <rect x="9" y="9" width="4" height="10" rx="0.5" fill="currentColor" opacity="0.7"/>
-      <rect x="15" y="4" width="4" height="15" rx="0.5" fill="currentColor"/>
+      <path d="M4 8c0-2.5 3-5 7-5s7 2.5 7 5c0 1.5-.8 2.8-2 3.7V18H6v-6.3C4.8 10.8 4 9.5 4 8z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+      <line x1="11" y1="3" x2="11" y2="18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  ),
+  retrospect: (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path d="M4 11C4 7.13 7.13 4 11 4C14.87 4 18 7.13 18 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      <polyline points="4,11 4,7 8,7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="11" y1="11" x2="11" y2="15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      <circle cx="11" cy="11" r="1.4" fill="currentColor"/>
     </svg>
   ),
   settings: (
@@ -43,11 +50,12 @@ const Icons = {
 }
 
 const NAV_ITEMS: { page: AnyPage; label: string; icon: JSX.Element }[] = [
-  { page: 'records',  label: '기록',  icon: Icons.records },
-  { page: 'mood',     label: '기분',  icon: Icons.mood },
-  { page: 'routine',  label: '루틴',  icon: Icons.routine },
-  { page: 'stats',    label: '통계',  icon: Icons.stats },
-  { page: 'settings', label: '설정',  icon: Icons.settings },
+  { page: 'records',     label: '기록',  icon: Icons.records },
+  { page: 'mood',        label: '기분',  icon: Icons.mood },
+  { page: 'routine',     label: '루틴',  icon: Icons.routine },
+  { page: 'diet',        label: '식단',  icon: Icons.diet },
+  { page: 'retrospect',  label: '회고',  icon: Icons.retrospect },
+  { page: 'settings',    label: '설정',  icon: Icons.settings },
 ]
 
 interface BottomNavProps {
@@ -73,8 +81,8 @@ export function BottomNav({ pageMode, onSelect }: BottomNavProps) {
                 <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
               )}
             </span>
-            <span className={`font-sans leading-none transition-all
-              ${active ? 'text-[10px] font-medium' : 'text-[10px] font-light'}`}>
+            <span className={`leading-none transition-all
+              ${active ? 'text-xs font-medium' : 'text-xs font-light'}`}>
               {label}
             </span>
           </button>

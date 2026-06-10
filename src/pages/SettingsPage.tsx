@@ -5,6 +5,8 @@ import { clearAllImages, getStorageSize } from '@/lib/imageDB'
 import { useDesign } from '@/hooks/useDesign'
 import { useMoodRecords } from '@/hooks/useMoodRecords'
 import { useRoutine } from '@/hooks/useRoutine'
+import { useRetrospect } from '@/hooks/useRetrospect'
+import { useDiet } from '@/hooks/useDiet'
 import { todayKey, getDateKey, subDays, startOfMonth, endOfMonth, startOfYear, formatDateDot } from '@/utils/date'
 
 type RangePreset = '1d' | '7d' | '30d' | 'month' | 'year' | 'custom'
@@ -44,11 +46,16 @@ const FONT_OPTIONS: { id: FontFamily; label: string; family: string }[] = [
 ]
 
 const HUE_PRESETS = [
-  { label: '갈색 (기본)', hue: 25 },
-  { label: '초록',       hue: 145 },
-  { label: '파랑',       hue: 210 },
-  { label: '보라',       hue: 270 },
-  { label: '분홍',       hue: 340 },
+  { label: '로즈',   hue: 355 },
+  { label: '핑크',   hue: 330 },
+  { label: '살구',   hue: 20  },
+  { label: '황금',   hue: 42  },
+  { label: '라임',   hue: 85  },
+  { label: '민트',   hue: 155 },
+  { label: '청록',   hue: 178 },
+  { label: '하늘',   hue: 205 },
+  { label: '라벤더', hue: 255 },
+  { label: '보라',   hue: 285 },
 ]
 
 interface Props { entries: Entry[] }
@@ -57,6 +64,8 @@ export function SettingsPage({ entries }: Props) {
   const today = todayKey()
   const { entries: moodEntries } = useMoodRecords()
   const { habits } = useRoutine()
+  const { retros, deleteAll: deleteAllRetros } = useRetrospect()
+  const { records: dietRecords } = useDiet()
   const { settings, setFont, setAccentHue, reset } = useDesign()
   const [preset, setPreset] = useState<RangePreset>('1d')
   const [customStart, setCustomStart] = useState(today)
@@ -73,6 +82,12 @@ export function SettingsPage({ entries }: Props) {
   const [deleteMoodDone, setDeleteMoodDone] = useState(false)
   const [deleteRoutineConfirm, setDeleteRoutineConfirm] = useState(false)
   const [deleteRoutineDone, setDeleteRoutineDone] = useState(false)
+  const [deleteRetroConfirm, setDeleteRetroConfirm] = useState(false)
+  const [deleteRetroDone, setDeleteRetroDone] = useState(false)
+  const [deleteDietConfirm, setDeleteDietConfirm] = useState(false)
+  const [deleteDietDone, setDeleteDietDone] = useState(false)
+  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false)
+  const [deleteAllDone, setDeleteAllDone] = useState(false)
 
   useEffect(() => { getStorageSize().then(setImageSize) }, [])
 
@@ -85,7 +100,7 @@ export function SettingsPage({ entries }: Props) {
   const handleExport = async () => {
     if (previewCount === 0) return
     setExporting(true); setResult(null); setExportError(null)
-    try { setResult(await exportEntries(entries, moodEntries, habits, startDate, endDate)) }
+    try { setResult(await exportEntries(entries, moodEntries, habits, retros, startDate, endDate)) }
     catch { setExportError('내보내기 중 오류가 발생했어요.') }
     finally { setExporting(false) }
   }
@@ -119,6 +134,28 @@ export function SettingsPage({ entries }: Props) {
     setTimeout(() => { setDeleteRoutineDone(false); window.location.reload() }, 2000)
   }
 
+  const handleDeleteRetro = () => {
+    if (!deleteRetroConfirm) { setDeleteRetroConfirm(true); return }
+    deleteAllRetros()
+    setDeleteRetroDone(true); setDeleteRetroConfirm(false)
+    setTimeout(() => setDeleteRetroDone(false), 2000)
+  }
+
+  const handleDeleteDiet = () => {
+    if (!deleteDietConfirm) { setDeleteDietConfirm(true); return }
+    localStorage.removeItem('vestori:diet')
+    setDeleteDietDone(true); setDeleteDietConfirm(false)
+    setTimeout(() => { setDeleteDietDone(false); window.location.reload() }, 2000)
+  }
+
+  const handleDeleteAll = () => {
+    if (!deleteAllConfirm) { setDeleteAllConfirm(true); return }
+    ;['vestori:entries', 'vestori:moods', 'vestori:habits', 'vestori:checks',
+      'vestori:retrospects', 'vestori:diet', 'vestori:design', 'vestori:threads'].forEach(k => localStorage.removeItem(k))
+    setDeleteAllDone(true); setDeleteAllConfirm(false)
+    setTimeout(() => { setDeleteAllDone(false); window.location.reload() }, 2000)
+  }
+
   return (
     <div className="flex flex-col gap-10">
 
@@ -131,10 +168,9 @@ export function SettingsPage({ entries }: Props) {
           <div className="flex gap-2 flex-wrap">
             {FONT_OPTIONS.map(({ id, label, family }) => (
               <button key={id} onClick={() => setFont(id)}
-                className={`flex flex-col items-center gap-1 px-4 py-3 rounded-sm border transition-all cursor-pointer
-                  ${settings.font === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light bg-white'}`}>
-                <span className="text-[20px] leading-none" style={{ fontFamily: family }}>Aa</span>
-                <span className="font-sans text-[11px]">{label}</span>
+                className={`btn-sm btn-on`}>
+                <span className="text-xl leading-none" style={{ fontFamily: family }}>Aa</span>
+                <span className="text-xs">{label}</span>
               </button>
             ))}
           </div>
@@ -145,22 +181,24 @@ export function SettingsPage({ entries }: Props) {
           <div className="flex gap-2 flex-wrap mb-3">
             {HUE_PRESETS.map(({ label, hue }) => (
               <button key={hue} onClick={() => setAccentHue(hue)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-sm border transition-all cursor-pointer
-                  ${settings.accentHue === hue ? 'border-accent bg-accent-pale' : 'border-paper-border bg-white hover:border-accent-light'}`}>
-                <span className="w-4 h-4 rounded-full flex-shrink-0 border border-black/10" style={{ background: `hsl(${hue}, 45%, 40%)` }} />
-                <span className="font-sans text-[12px] text-ink-muted">{label}</span>
+                title={label}
+                className={`flex flex-col items-center gap-1 cursor-pointer border-none bg-none p-0 group`}>
+                <span className={`w-9 h-9 rounded-full flex-shrink-0 transition-all ring-offset-2
+                  ${settings.accentHue === hue ? 'ring-2 ring-accent scale-110' : 'hover:scale-105 ring-0'}`}
+                  style={{ background: `hsl(${hue}, 55%, 78%)` }} />
+                <span className="text-xs text-ink-faint">{label}</span>
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-3 bg-white border border-paper-border rounded-sm px-4 py-3">
-            <label className="font-sans text-[12px] text-ink-muted flex-shrink-0">커스텀</label>
+          <div className="flex items-center gap-3 bg-paper-card border border-paper-border rounded-sm px-4 py-3">
+            <label className="text-xs text-ink-muted flex-shrink-0">커스텀</label>
             <input type="range" min={0} max={360} value={settings.accentHue} onChange={e => setAccentHue(Number(e.target.value))}
               className="flex-1 accent-[var(--color-accent)]" />
-            <div className="w-6 h-6 rounded-sm flex-shrink-0 border border-black/10" style={{ background: `hsl(${settings.accentHue}, 45%, 40%)` }} />
+            <div className="w-6 h-6 rounded-full flex-shrink-0 border border-black/10" style={{ background: `hsl(${settings.accentHue}, 55%, 78%)` }} />
           </div>
         </div>
 
-        <button onClick={reset} className="mt-4 font-sans text-[12px] text-ink-faint hover:text-accent border-none bg-none p-0 cursor-pointer transition-colors">기본값으로 초기화</button>
+        <button onClick={reset} className="mt-4 text-sm text-ink-faint hover:text-accent border-none bg-none p-0 cursor-pointer transition-colors">기본값으로 초기화</button>
       </section>
 
       {/* ── 내보내기 ── */}
@@ -171,8 +209,7 @@ export function SettingsPage({ entries }: Props) {
           <div className="flex flex-wrap gap-1.5">
             {PRESETS.map(({ id, label }) => (
               <button key={id} onClick={() => setPreset(id)}
-                className={`font-sans text-[12px] px-3 py-1.5 rounded-sm border transition-all cursor-pointer
-                  ${preset === id ? 'border-accent bg-accent-pale text-accent' : 'border-paper-border text-ink-faint hover:border-accent-light bg-white'}`}>
+                className={`btn-sm btn-on`}>
                 {label}
               </button>
             ))}
@@ -180,136 +217,205 @@ export function SettingsPage({ entries }: Props) {
         </div>
 
         {preset === 'custom' && (
-          <div className="flex items-center gap-3 mb-4 p-4 bg-white border border-paper-border rounded-sm">
+          <div className="flex items-center gap-3 mb-4 p-4 bg-paper-card border border-paper-border rounded-sm">
             <div className="flex flex-col gap-1 flex-1">
               <Label>시작일</Label>
               <input type="date" value={customStart} max={customEnd} onChange={e => setCustomStart(e.target.value)}
-                className="font-sans text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-accent-light" />
+                className="text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-ink/30" />
             </div>
-            <span className="font-sans text-[12px] text-ink-faint mt-5">—</span>
+            <span className="text-xs text-ink-faint mt-5">—</span>
             <div className="flex flex-col gap-1 flex-1">
               <Label>종료일</Label>
               <input type="date" value={customEnd} min={customStart} max={today} onChange={e => setCustomEnd(e.target.value)}
-                className="font-sans text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-accent-light" />
+                className="text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-ink/30" />
             </div>
           </div>
         )}
 
-        <div className="p-4 bg-white border border-paper-border rounded-sm mb-4 relative overflow-hidden">
+        <div className="p-4 bg-paper-card border border-paper-border rounded-sm mb-4 relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent rounded-l-sm" />
-          <p className="font-sans text-[11px] text-ink-faint mb-1">내보낼 내용</p>
-          <p className="font-body text-[14px] text-ink">
+          <p className="text-xs text-ink-faint mb-1">내보낼 내용</p>
+          <p className="text-sm text-ink">
             {startDate === endDate
               ? <><span className="text-accent">{formatDateDot(startDate)}</span> 하루</>
               : <><span className="text-accent">{formatDateDot(startDate)}</span> ~ <span className="text-accent">{formatDateDot(endDate)}</span></>}
           </p>
-          <p className="font-sans text-[11px] text-ink-faint mt-1">
+          <p className="text-xs text-ink-faint mt-1">
             {previewCount > 0 ? <><span className="text-ink-muted">{previewCount}개</span>의 기록</> : '해당 기간에 기록이 없어요'}
           </p>
         </div>
 
         <button onClick={handleExport} disabled={exporting || previewCount === 0}
-          className="w-full bg-ink text-white font-sans text-[13px] py-3 rounded-sm hover:bg-accent transition-colors disabled:opacity-40 cursor-pointer">
+          className="w-full bg-ink text-white text-sm py-3 rounded-sm hover:opacity-75 transition-colors disabled:opacity-40 cursor-pointer">
           {exporting ? '내보내는 중...' : `${previewCount}개 기록 내보내기`}
         </button>
-        {result && <div className="mt-3 p-3 bg-accent-pale border border-accent/20 rounded-sm"><p className="font-sans text-[12px] text-accent">✓ {result.dayCount}일 · {result.fileCount}개 파일 완료</p></div>}
-        {exportError && <p className="mt-3 font-sans text-[12px] text-red-400">{exportError}</p>}
+        {result && <div className="mt-3 p-3 bg-ink/8 border border-ink/15 rounded-sm"><p className="text-xs text-ink">✓ {result.dayCount}일 · {result.fileCount}개 파일 완료</p></div>}
+        {exportError && <p className="mt-3 text-sm text-red-400">{exportError}</p>}
       </section>
 
       {/* ── 데이터 ── */}
       <section>
         <SectionTitle>데이터</SectionTitle>
         <div className="flex flex-col gap-3">
-          <div className="p-4 bg-white border border-paper-border rounded-sm">
+          <div className="p-4 bg-paper-card border border-paper-border rounded-sm">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="font-sans text-[12px] text-ink-muted mb-0.5">기록 (localStorage)</p>
-                <p className="font-sans text-[12px] text-ink-faint"><span className="text-accent">{entries.length}개</span>의 기록</p>
+                <p className="text-xs text-ink-muted mb-0.5">기록 (localStorage)</p>
+                <p className="text-xs text-ink-faint"><span className="text-accent">{entries.length}개</span>의 기록</p>
               </div>
               {entries.length > 0 && (
                 <button onClick={handleDeleteAllEntries}
-                  className={`font-sans text-[12px] px-3 py-1.5 rounded-sm border transition-all cursor-pointer
-                    ${deleteEntriesConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+                  className={`text-xs px-3 py-1.5 rounded-sm border transition-all cursor-pointer
+                    ${deleteEntriesConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-ink/30'}`}>
                   {deleteEntriesConfirm ? '정말 삭제' : '전체 삭제'}
                 </button>
               )}
             </div>
             {deleteEntriesConfirm && (
               <div className="flex items-center gap-2 mt-1">
-                <p className="font-sans text-[11px] text-red-400 flex-1">모든 기록이 영구 삭제돼요. 되돌릴 수 없어요.</p>
-                <button onClick={() => setDeleteEntriesConfirm(false)} className="font-sans text-[11px] text-ink-faint cursor-pointer border-none bg-none">취소</button>
+                <p className="text-xs text-red-400 flex-1">모든 기록이 영구 삭제돼요. 되돌릴 수 없어요.</p>
+                <button onClick={() => setDeleteEntriesConfirm(false)} className="text-xs text-ink-faint cursor-pointer border-none bg-none">취소</button>
               </div>
             )}
-            {deleteEntriesDone && <p className="font-sans text-[11px] text-accent mt-1">✓ 모든 기록이 삭제됐어요</p>}
+            {deleteEntriesDone && <p className="text-xs text-ink mt-1">✓ 모든 기록이 삭제됐어요</p>}
           </div>
-          <div className="p-4 bg-white border border-paper-border rounded-sm">
+          <div className="p-4 bg-paper-card border border-paper-border rounded-sm">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="font-sans text-[12px] text-ink-muted mb-0.5">이미지 (IndexedDB)</p>
-                <p className="font-sans text-[12px] text-ink-faint">
+                <p className="text-xs text-ink-muted mb-0.5">이미지 (IndexedDB)</p>
+                <p className="text-xs text-ink-faint">
                   {imageCount > 0 ? <><span className="text-accent">{imageCount}장</span> · {imageSize !== null ? formatBytes(imageSize) : '계산 중...'}</> : '저장된 이미지 없음'}
                 </p>
               </div>
               {imageCount > 0 && (
                 <button onClick={handleClearDB}
-                  className={`font-sans text-[12px] px-3 py-1.5 rounded-sm border transition-all cursor-pointer
-                    ${clearConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+                  className={`text-xs px-3 py-1.5 rounded-sm border transition-all cursor-pointer
+                    ${clearConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-ink/30'}`}>
                   {clearConfirm ? '정말 삭제할게요' : '전체 삭제'}
                 </button>
               )}
             </div>
             {clearConfirm && (
               <div className="flex items-center gap-2 mt-1">
-                <p className="font-sans text-[11px] text-red-400 flex-1">모든 이미지가 삭제돼요. 되돌릴 수 없어요.</p>
-                <button onClick={() => setClearConfirm(false)} className="font-sans text-[11px] text-ink-faint cursor-pointer border-none bg-none">취소</button>
+                <p className="text-xs text-red-400 flex-1">모든 이미지가 삭제돼요. 되돌릴 수 없어요.</p>
+                <button onClick={() => setClearConfirm(false)} className="text-xs text-ink-faint cursor-pointer border-none bg-none">취소</button>
               </div>
             )}
-            {clearDone && <p className="font-sans text-[11px] text-accent mt-1">✓ 이미지가 모두 삭제됐어요</p>}
+            {clearDone && <p className="text-xs text-ink mt-1">✓ 이미지가 모두 삭제됐어요</p>}
           </div>
-          <div className="p-4 bg-white border border-paper-border rounded-sm">
+          <div className="p-4 bg-paper-card border border-paper-border rounded-sm">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="font-sans text-[12px] text-ink-muted mb-0.5">기분 기록</p>
-                <p className="font-sans text-[12px] text-ink-faint"><span className="text-accent">{entries.length}개</span>의 기분 기록</p>
+                <p className="text-xs text-ink-muted mb-0.5">기분 기록</p>
+                <p className="text-xs text-ink-faint"><span className="text-accent">{entries.length}개</span>의 기분 기록</p>
               </div>
               {Object.keys(moodEntries).length > 0 && (
                 <button onClick={handleDeleteMood}
-                  className={`font-sans text-[12px] px-3 py-1.5 rounded-sm border transition-all cursor-pointer
-                    ${deleteMoodConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+                  className={`text-xs px-3 py-1.5 rounded-sm border transition-all cursor-pointer
+                    ${deleteMoodConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-ink/30'}`}>
                   {deleteMoodConfirm ? '정말 삭제' : '전체 삭제'}
                 </button>
               )}
             </div>
             {deleteMoodConfirm && (
               <div className="flex items-center gap-2 mt-1">
-                <p className="font-sans text-[11px] text-red-400 flex-1">모든 기분 기록이 영구 삭제돼요. 되돌릴 수 없어요.</p>
-                <button onClick={() => setDeleteMoodConfirm(false)} className="font-sans text-[11px] text-ink-faint cursor-pointer border-none bg-none">취소</button>
+                <p className="text-xs text-red-400 flex-1">모든 기분 기록이 영구 삭제돼요. 되돌릴 수 없어요.</p>
+                <button onClick={() => setDeleteMoodConfirm(false)} className="text-xs text-ink-faint cursor-pointer border-none bg-none">취소</button>
               </div>
             )}
-            {deleteMoodDone && <p className="font-sans text-[11px] text-accent mt-1">✓ 모든 기분 기록이 삭제됐어요</p>}
+            {deleteMoodDone && <p className="text-xs text-ink mt-1">✓ 모든 기분 기록이 삭제됐어요</p>}
           </div>
-          <div className="p-4 bg-white border border-paper-border rounded-sm">
+          <div className="p-4 bg-paper-card border border-paper-border rounded-sm">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="font-sans text-[12px] text-ink-muted mb-0.5">루틴</p>
-                <p className="font-sans text-[12px] text-ink-faint"><span className="text-accent">{habits.length}개</span>의 루틴</p>
+                <p className="text-xs text-ink-muted mb-0.5">루틴</p>
+                <p className="text-xs text-ink-faint"><span className="text-accent">{habits.length}개</span>의 루틴</p>
               </div>
               {habits.length > 0 && (
                 <button onClick={handleDeleteRoutine}
-                  className={`font-sans text-[12px] px-3 py-1.5 rounded-sm border transition-all cursor-pointer
-                    ${deleteRoutineConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-accent-light'}`}>
+                  className={`text-xs px-3 py-1.5 rounded-sm border transition-all cursor-pointer
+                    ${deleteRoutineConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-ink/30'}`}>
                   {deleteRoutineConfirm ? '정말 삭제' : '전체 삭제'}
                 </button>
               )}
             </div>
             {deleteRoutineConfirm && (
               <div className="flex items-center gap-2 mt-1">
-                <p className="font-sans text-[11px] text-red-400 flex-1">모든 루틴이 영구 삭제돼요. 되돌릴 수 없어요.</p>
-                <button onClick={() => setDeleteRoutineConfirm(false)} className="font-sans text-[11px] text-ink-faint cursor-pointer border-none bg-none">취소</button>
+                <p className="text-xs text-red-400 flex-1">모든 루틴이 영구 삭제돼요. 되돌릴 수 없어요.</p>
+                <button onClick={() => setDeleteRoutineConfirm(false)} className="text-xs text-ink-faint cursor-pointer border-none bg-none">취소</button>
               </div>
             )}
-            {deleteRoutineDone && <p className="font-sans text-[11px] text-accent mt-1">✓ 모든 루틴이 삭제됐어요</p>}
+            {deleteRoutineDone && <p className="text-xs text-ink mt-1">✓ 모든 루틴이 삭제됐어요</p>}
           </div>
+          <div className="p-4 bg-paper-card border border-paper-border rounded-sm">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="text-xs text-ink-muted mb-0.5">회고</p>
+                <p className="text-xs text-ink-faint"><span className="text-accent">{Object.keys(retros).length}개</span>의 회고</p>
+              </div>
+              {Object.keys(retros).length > 0 && (
+                <button onClick={handleDeleteRetro}
+                  className={`text-xs px-3 py-1.5 rounded-sm border transition-all cursor-pointer
+                    ${deleteRetroConfirm ? 'border-red-400 bg-red-50 text-red-500' : 'border-paper-border text-ink-faint hover:border-ink/30'}`}>
+                  {deleteRetroConfirm ? '정말 삭제' : '전체 삭제'}
+                </button>
+              )}
+            </div>
+            {deleteRetroConfirm && (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-xs text-red-400 flex-1">모든 회고가 영구 삭제돼요. 되돌릴 수 없어요.</p>
+                <button onClick={() => setDeleteRetroConfirm(false)} className="text-xs text-ink-faint cursor-pointer border-none bg-none">취소</button>
+              </div>
+            )}
+            {deleteRetroDone && <p className="text-xs text-ink mt-1">✓ 모든 회고가 삭제됐어요</p>}
+          </div>
+
+          {/* 식단 */}
+          <div className="p-4 bg-paper-card border border-paper-border rounded-sm">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="text-sm text-ink-muted mb-0.5">식단</p>
+                <p className="text-sm text-ink-faint"><span className="text-ink">{Object.keys(dietRecords).length}일</span>의 식단 기록</p>
+              </div>
+              {Object.keys(dietRecords).length > 0 && (
+                <button onClick={handleDeleteDiet}
+                  className={`btn-sm ${deleteDietConfirm ? 'border-red-400 text-red-500' : 'btn-off'}`}>
+                  {deleteDietConfirm ? '정말 삭제' : '전체 삭제'}
+                </button>
+              )}
+            </div>
+            {deleteDietConfirm && (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm text-red-400 flex-1">모든 식단 기록이 영구 삭제돼요.</p>
+                <button onClick={() => setDeleteDietConfirm(false)} className="text-sm text-ink-faint cursor-pointer border-none bg-none">취소</button>
+              </div>
+            )}
+            {deleteDietDone && <p className="text-sm text-ink-muted mt-1">✓ 식단 기록이 삭제됐어요</p>}
+          </div>
+        </div>
+      </section>
+
+      {/* 전체 데이터 삭제 */}
+      <section>
+        <SectionTitle>위험 구역</SectionTitle>
+        <div className="p-4 bg-paper-card border border-paper-border rounded-sm">
+          <div className="flex items-start justify-between mb-1">
+            <div>
+              <p className="text-sm text-ink-muted mb-0.5">전체 데이터 삭제</p>
+              <p className="text-sm text-ink-faint">기록, 기분, 루틴, 식단, 회고, 설정 모두</p>
+            </div>
+            <button onClick={handleDeleteAll}
+              className={`btn-sm ${deleteAllConfirm ? 'border-red-400 text-red-500' : 'border-red-300 text-red-400'}`}>
+              {deleteAllConfirm ? '정말요?' : '전체 삭제'}
+            </button>
+          </div>
+          {deleteAllConfirm && (
+            <div className="flex items-center gap-2 mt-2">
+              <p className="text-sm text-red-400 flex-1">앱의 모든 데이터가 영구 삭제됩니다. 되돌릴 수 없어요.</p>
+              <button onClick={() => setDeleteAllConfirm(false)} className="text-sm text-ink-faint cursor-pointer border-none bg-none">취소</button>
+            </div>
+          )}
+          {deleteAllDone && <p className="text-sm text-red-400 mt-1">✓ 모든 데이터가 삭제됐어요</p>}
         </div>
       </section>
     </div>
@@ -319,11 +425,11 @@ export function SettingsPage({ entries }: Props) {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-baseline gap-3 mb-5">
-      <h3 className="font-serif text-[16px] italic text-ink whitespace-nowrap">{children}</h3>
+      <h3 className="text-base italic text-ink whitespace-nowrap">{children}</h3>
       <div className="flex-1 h-px bg-paper-border" />
     </div>
   )
 }
 function Label({ children }: { children: React.ReactNode }) {
-  return <p className="font-sans text-[11px] text-ink-faint tracking-wide mb-2">{children}</p>
+  return <p className="text-xs text-ink-faint tracking-wide mb-2">{children}</p>
 }

@@ -40,13 +40,13 @@ export function CalendarTimeline({ entries, getPosts, onDelete, onUpdate, onTagC
       {months.map(month => (
         <div key={month.mKey} className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <span className="font-serif text-[13px] italic text-ink-muted whitespace-nowrap">{month.label}</span>
+            <span className="text-sm italic text-ink-muted whitespace-nowrap">{month.label}</span>
             <div className="flex-1 h-px bg-paper-border" />
           </div>
           {month.days.map(day => (
             <div key={day.dKey} className="flex gap-3 mb-2">
               <div className="w-14 flex-shrink-0 pt-6">
-                <span className="font-sans text-[10px] text-ink-faint leading-tight">{day.label}</span>
+                <span className="text-xs text-ink-faint leading-tight">{day.label}</span>
               </div>
               <div className="flex gap-2 flex-1 min-w-0">
                 <div className="flex flex-col items-center pt-7">

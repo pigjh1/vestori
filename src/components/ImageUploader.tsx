@@ -56,17 +56,17 @@ export function ImageUploader({ entryId, onUploaded, compact = false }: ImageUpl
         onDragLeave={() => setDragging(false)}
         onDrop={e => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files) }}
         className={`flex items-center justify-center gap-2 border border-dashed rounded-sm px-4 py-2.5 cursor-pointer transition-all
-          ${dragging ? 'border-accent bg-accent-pale' : 'border-paper-border hover:border-accent-light hover:bg-paper-warm'}`}>
+          ${dragging ? 'border-ink/25 bg-ink/8' : 'border-paper-border hover:border-ink/30 hover:bg-paper-warm'}`}>
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <rect x="0.5" y="2.5" width="13" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
           <circle cx="5" cy="6.5" r="1.5" stroke="currentColor" strokeWidth="1.1"/>
           <path d="M0.5 10l3-3 3 3 2.5-2L13 10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        <span className="font-sans text-[11px] text-ink-faint">사진 추가</span>
+        <span className="text-xs text-ink-faint">사진 추가</span>
       </div>
       <input ref={inputRef} type="file" accept={ACCEPTED.join(',')} multiple className="hidden"
         onChange={e => handleFiles(e.target.files)} />
-      {error && <p className="font-sans text-[11px] text-red-400 mt-1">{error}</p>}
+      {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
     </div>
   )
 }

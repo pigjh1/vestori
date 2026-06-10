@@ -79,7 +79,7 @@ export function Sidebar({ pageMode, onSelect, dark, onToggleDark }: SidebarProps
       bg-paper border-r border-paper-border transition-colors duration-300">
 
       <div className="mb-7 flex-shrink-0">
-        <span className="font-serif text-[22px] italic text-accent leading-none select-none">V</span>
+        <span className="text-xl italic text-ink leading-none select-none">V</span>
       </div>
 
       <nav className="flex flex-col items-center gap-0.5 flex-1">
@@ -89,10 +89,10 @@ export function Sidebar({ pageMode, onSelect, dark, onToggleDark }: SidebarProps
             <button key={page} onClick={() => onSelect(page)} title={label}
               className={`group relative w-11 h-11 flex items-center justify-center rounded-md
                 transition-all duration-150 cursor-pointer
-                ${active ? 'bg-accent-pale text-accent' : 'text-ink-faint hover:text-ink hover:bg-paper-warm'}`}>
+                ${active ? 'bg-ink/8 text-ink' : 'text-ink-faint hover:text-ink hover:bg-paper-warm'}`}>
               {icon}
               {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent rounded-r-full" />}
-              <span className="absolute left-[52px] px-2.5 py-1.5 bg-ink text-paper font-sans text-[11px]
+              <span className="absolute left-[52px] px-2.5 py-1.5 bg-ink text-paper text-sm
                 rounded-md whitespace-nowrap opacity-0 pointer-events-none shadow-lg
                 group-hover:opacity-100 transition-opacity duration-150 z-50">
                 {label}
@@ -106,20 +106,20 @@ export function Sidebar({ pageMode, onSelect, dark, onToggleDark }: SidebarProps
         <button onClick={() => onSelect('stats')} title="통계"
           className={`group relative w-11 h-11 flex items-center justify-center rounded-md
             transition-all duration-150 cursor-pointer
-            ${pageMode === 'stats' ? 'bg-accent-pale text-accent' : 'text-ink-faint hover:text-ink hover:bg-paper-warm'}`}>
+            ${pageMode === 'stats' ? 'bg-ink/8 text-ink' : 'text-ink-faint hover:text-ink hover:bg-paper-warm'}`}>
           {Icons.stats}
           {pageMode === 'stats' && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent rounded-r-full" />}
-          <span className="absolute left-[52px] px-2.5 py-1.5 bg-ink text-paper font-sans text-[11px]
+          <span className="absolute left-[52px] px-2.5 py-1.5 bg-ink text-paper text-sm
             rounded-md whitespace-nowrap opacity-0 pointer-events-none shadow-lg
             group-hover:opacity-100 transition-opacity duration-150 z-50">통계</span>
         </button>
         <button onClick={() => onSelect('settings')} title="설정"
           className={`group relative w-11 h-11 flex items-center justify-center rounded-md
             transition-all duration-150 cursor-pointer
-            ${pageMode === 'settings' ? 'bg-accent-pale text-accent' : 'text-ink-faint hover:text-ink hover:bg-paper-warm'}`}>
+            ${pageMode === 'settings' ? 'bg-ink/8 text-ink' : 'text-ink-faint hover:text-ink hover:bg-paper-warm'}`}>
           {Icons.settings}
           {pageMode === 'settings' && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent rounded-r-full" />}
-          <span className="absolute left-[52px] px-2.5 py-1.5 bg-ink text-paper font-sans text-[11px]
+          <span className="absolute left-[52px] px-2.5 py-1.5 bg-ink text-paper text-sm
             rounded-md whitespace-nowrap opacity-0 pointer-events-none shadow-lg
             group-hover:opacity-100 transition-opacity duration-150 z-50">설정</span>
         </button>

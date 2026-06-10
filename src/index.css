@@ -7,6 +7,7 @@
     --color-paper:        #f5f1eb;
     --color-paper-warm:   #ede7dc;
     --color-paper-border: #d8cfc3;
+    --color-paper-card:   #ffffff;
     --color-ink:          #1c1916;
     --color-ink-muted:    #4a443d;
     --color-ink-faint:    #7a726a;
@@ -21,6 +22,7 @@
     --color-paper:        #181512;
     --color-paper-warm:   #1f1b17;
     --color-paper-border: #2c2720;
+    --color-paper-card:   #252019;
     --color-ink:          #f0ebe3;
     --color-ink-muted:    #c8bfb5;
     --color-ink-faint:    #9a9088;
@@ -40,7 +42,7 @@
     background: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-body);
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.7;
     transition: background-color 0.3s, color 0.3s;
   }
@@ -49,16 +51,44 @@
   .font-body  { font-family: var(--font-body) !important; }
   .font-serif { font-family: var(--font-serif) !important; }
 
-  /* 16px — iOS 자동 줌 방지 */
+  /* 16px — iOS 자동 줌 방지 + 다크모드 기본 스타일 */
   input, textarea, select {
     font-size: 16px !important;
     caret-color: var(--color-accent);
+    background: var(--color-paper-warm);
+    color: var(--color-ink);
+    border-color: var(--color-paper-border);
   }
 
   textarea::placeholder, input::placeholder {
     color: var(--color-ink-faint);
     font-style: italic;
     font-weight: 300;
+  }
+
+  /* 버튼 유틸리티 */
+  .btn-primary {
+    @apply cursor-pointer rounded-sm px-4 py-2.5 text-sm transition-opacity
+           bg-ink text-paper font-medium hover:opacity-75 disabled:opacity-30;
+  }
+  .btn-sm {
+    @apply cursor-pointer rounded-sm px-3 py-1.5 text-sm border transition-colors;
+  }
+  /* 탭/토글: 더 흐릿하게 */
+  .btn-on {
+    @apply bg-transparent text-ink-muted;
+    border-color: color-mix(in srgb, var(--color-ink) 22%, transparent);
+  }
+  .btn-off {
+    @apply bg-transparent text-ink-faint;
+    border-color: color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+  .btn-off:hover {
+    @apply text-ink-muted;
+  }
+  .btn-ghost {
+    @apply cursor-pointer text-sm text-ink-muted hover:text-ink
+           transition-colors bg-transparent border-none p-0;
   }
 
   /* safe-area (iPhone 홈 인디케이터) */

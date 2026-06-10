@@ -120,8 +120,9 @@ export interface ExportResult { fileCount: number; dayCount: number }
 
 export async function exportEntries(
   allEntries: Entry[],
-  moodRecords: Record<string, any>,
+  moodRecords: any[],
   habits: any[],
+  retros: Record<string, any>,
   startDate: string, 
   endDate: string
 ): Promise<ExportResult> {
@@ -139,29 +140,65 @@ export async function exportEntries(
   }
 
   // 기분 기록 내보내기
-  const moodKeys = Object.keys(moodRecords).filter(k => k >= startDate && k <= endDate)
-  if (moodKeys.length > 0) {
-    let moodContent = '# 기분 기록\n\n'
-    moodKeys.sort().forEach(dateKey => {
-      const record = moodRecords[dateKey]
-      moodContent += `## ${dateKey}\n- 기분: ${['매우 좋지 않음', '좋지 않음', '보통', '좋음', '아주 좋음'][record.score - 1]}\n\n`
+  const moodInRange = moodRecords.filter(e => {
+    const d = e.dateTime?.split(' ')[0]
+    return d >= startDate && d <= endDate
+  })
+  if (moodInRange.length > 0) {
+    let content = '# 기분 기록\n\n'
+    const byDate: Record<string, any[]> = {}
+    moodInRange.forEach(e => {
+      const d = e.dateTime.split(' ')[0]
+      if (!byDate[d]) byDate[d] = []
+      byDate[d].push(e)
     })
-    allFiles['_mood_summary'] = moodContent
+    Object.entries(byDate).sort().forEach(([date, recs]) => {
+      const avg = (recs.reduce((s: number, r: any) => s + r.score, 0) / recs.length).toFixed(1)
+      content += `## ${date}  (평균 ${avg})\n`
+      recs.forEach((r: any) => { content += `- ${r.dateTime.split(' ')[1]} — ${r.score}점\n` })
+      content += '\n'
+    })
+    allFiles['_mood_summary'] = content
   }
 
   // 루틴 내보내기
   if (habits.length > 0) {
-    let routineContent = '# 루틴\n\n'
-    habits.forEach(habit => {
-      routineContent += `- ${habit.name}\n`
-    })
-    allFiles['_routine_summary'] = routineContent
+    let content = '# 루틴\n\n'
+    habits.forEach((h: any) => { content += `- ${h.name}\n` })
+    allFiles['_routine_summary'] = content
   }
 
-  const entries = Object.entries(allFiles)
-  for (let i = 0; i < entries.length; i++) {
-    downloadFile(entries[i][0], entries[i][1])
-    if (i < entries.length - 1) await new Promise(r => setTimeout(r, 300))
+  // 회고 내보내기
+  const retroKeys = Object.keys(retros).filter(k => k >= startDate.slice(0, 7) || k.includes('-W'))
+  if (retroKeys.length > 0) {
+    let content = '# 회고\n\n'
+    retroKeys.sort().forEach(key => {
+      const r = retros[key]
+      if (r.type === 'weekly') {
+        content += `## 📆 ${key}\n\n`
+        if (r.wins) content += `### ✅ 이번 주 잘한 것\n${r.wins}\n\n`
+        if (r.learnings) content += `### 📚 배운 것\n${r.learnings}\n\n`
+        if (r.challenges) content += `### 😤 힘들었던 것\n${r.challenges}\n\n`
+        if (r.next_focus) content += `### 🎯 다음 주 집중할 것\n${r.next_focus}\n\n`
+        if (r.energy) content += `### ⚡ 에너지\n${r.energy}\n\n`
+      } else {
+        content += `## 📋 ${key}\n\n`
+        if (r.achievements_work) content += `### 🙌 성과 (Work)\n${r.achievements_work}\n\n`
+        if (r.achievements_personal) content += `### 🙌 성과 (개인)\n${r.achievements_personal}\n\n`
+        if (r.improvements) content += `### 🌱 개선할 사항\n${r.improvements}\n\n`
+        if (r.ideas) content += `### 💡 개선 아이디어\n${r.ideas}\n\n`
+        if (r.actions) content += `### ✔ 액션 아이템\n${r.actions}\n\n`
+        if (r.others) content += `### 기타\n${r.others}\n\n`
+      }
+      content += '---\n\n'
+    })
+    allFiles['_retrospect_summary'] = content
   }
-  return { fileCount: entries.length, dayCount }
+
+  const fileEntries = Object.entries(allFiles)
+  for (let i = 0; i < fileEntries.length; i++) {
+    downloadFile(fileEntries[i][0], fileEntries[i][1])
+    if (i < fileEntries.length - 1) await new Promise(r => setTimeout(r, 300))
+  }
+  return { fileCount: fileEntries.length, dayCount }
 }
