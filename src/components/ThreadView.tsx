@@ -1,6 +1,6 @@
 import { useState, KeyboardEvent } from 'react'
 import type { ThreadPost } from '@/types'
-import { formatTime, formatDateLabel, getDateKey, todayKey } from '@/utils/date'
+import { formatTime, formatDateLabel, getDateKey, todayKey, pad } from '@/utils/date'
 import { ImageUploader } from './ImageUploader'
 import { ImageGallery } from './ImageGallery'
 import { v4 as uuidv4 } from 'uuid'
@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 interface ThreadViewProps {
   entryId: string
   posts: ThreadPost[]
-  onAdd: (entryId: string, text: string, imageIds: string[]) => void
+  onAdd: (entryId: string, text: string, imageIds: string[], customTime?: string) => void
   onDelete: (id: string) => void
 }
 
@@ -19,18 +19,33 @@ function formatPostTime(iso: string): string {
   return `${formatDateLabel(iso)} ${time}`
 }
 
+function nowTimeValue(): string {
+  const d = new Date()
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps) {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [imageIds, setImageIds] = useState<string[]>([])
   const [composerId] = useState(() => uuidv4())
+  const [useCustomTime, setUseCustomTime] = useState(false)
+  const [customTime, setCustomTime] = useState(nowTimeValue())
 
   const handleAdd = () => {
     const t = text.trim()
     if (!t && imageIds.length === 0) return
-    onAdd(entryId, t, imageIds)
+    let finalTime: string | undefined
+    if (useCustomTime) {
+      const today = new Date()
+      const [h, m] = customTime.split(':')
+      today.setHours(Number(h), Number(m), 0, 0)
+      finalTime = today.toISOString()
+    }
+    onAdd(entryId, t, imageIds, finalTime)
     setText('')
     setImageIds([])
+    setCustomTime(nowTimeValue())
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -54,17 +69,13 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
         <div className="mb-3">
           {posts.map((post) => (
             <div key={post.id} className="flex gap-3 group">
-              {/* 세로 연결선 */}
               <div className="flex flex-col items-center flex-shrink-0" style={{ width: '2px' }}>
                 <div className="w-0.5 bg-paper-border flex-1 mt-1" style={{ minHeight: '100%' }} />
               </div>
-
-              {/* 포스트 내용 */}
               <div className="flex-1 pb-3 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs text-ink-faint">{formatPostTime(post.createdAt)}</span>
-                  <button
-                    onClick={() => onDelete(post.id)}
+                  <button onClick={() => onDelete(post.id)}
                     className="opacity-0 group-hover:opacity-100 transition-opacity text-sm text-ink-faint hover:text-accent cursor-pointer bg-none border-none p-0 ml-auto">
                     삭제
                   </button>
@@ -87,20 +98,16 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
 
       {/* 새 타래 입력 */}
       <div className="flex gap-3">
-        {/* 연결선과 이어지는 점 */}
         <div className="flex flex-col items-center flex-shrink-0" style={{ width: '2px' }}>
           <div className="w-2 h-2 rounded-full border-2 border-accent-light bg-paper mt-1 flex-shrink-0" />
         </div>
 
         <div className="flex-1 min-w-0">
-          <textarea
-            value={text}
-            autoFocus
+          <textarea value={text} autoFocus
             onChange={e => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="이어서 기록하기..."
-            rows={2}
-            maxLength={500}
+            rows={2} maxLength={500}
             className="w-full font-light text-ink bg-transparent border-b border-paper-border outline-none focus:border-ink/30 resize-none placeholder:text-ink-faint transition-colors pb-1"
           />
 
@@ -110,17 +117,26 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
             </div>
           )}
 
+          {/* 시간 설정 */}
+          <div className="flex items-center gap-2 mt-2.5">
+            <button onClick={() => setUseCustomTime(v => !v)}
+              className={`text-sm px-2 py-0.5 rounded-sm border transition-colors cursor-pointer
+                ${useCustomTime ? 'btn-sm btn-on' : 'btn-sm btn-off'}`}>
+              ⏱ 시간
+            </button>
+            {useCustomTime && (
+              <input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)}
+                className="border border-paper-border rounded-sm px-2 py-0.5 text-sm outline-none focus:border-ink/30" />
+            )}
+          </div>
+
           <div className="flex items-center gap-2 mt-2">
-            {/* 이미지 첨부 */}
             <div className="flex-shrink-0">
-              <ImageUploader
-                entryId={`thread-${composerId}`}
-                onUploaded={id => setImageIds(prev => [...prev, id])}
-                compact
-              />
+              <ImageUploader entryId={`thread-${composerId}`}
+                onUploaded={id => setImageIds(prev => [...prev, id])} compact />
             </div>
             <div className="flex gap-2 ml-auto">
-              <button onClick={() => { setOpen(false); setText(''); setImageIds([]) }}
+              <button onClick={() => { setOpen(false); setText(''); setImageIds([]); setUseCustomTime(false) }}
                 className="text-xs text-ink-faint hover:text-ink border border-paper-border px-2.5 py-1 rounded-sm cursor-pointer transition-colors">
                 닫기
               </button>

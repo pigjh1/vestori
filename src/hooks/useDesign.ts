@@ -13,14 +13,17 @@ const FONT_MAP: Record<FontFamily, string> = {
   'jetbrains-mono': '"JetBrains Mono", monospace',
 }
 
+const VALID_FONTS: FontFamily[] = ['noto-sans', 'noto-serif', 'gowun-batang', 'gowun-dodum', 'noto-brush', 'noto-pen', 'jetbrains-mono']
+
 function loadSettings(): DesignSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { font: 'noto-sans', accentHue: 28 }
+    if (!raw) return { font: 'noto-sans', accentHue: 28, radius: 3, fontSize: 1 }
     const parsed = JSON.parse(raw) as DesignSettings
-    return { ...parsed, font: parsed.font ?? 'noto-sans' }
+    const font = VALID_FONTS.includes(parsed.font) ? parsed.font : 'noto-sans'
+    return { font, accentHue: parsed.accentHue ?? 28, radius: parsed.radius ?? 3, fontSize: parsed.fontSize ?? 1 }
   } catch {
-    return { font: 'noto-sans', accentHue: 28 }
+    return { font: 'noto-sans', accentHue: 28, radius: 3, fontSize: 1 }
   }
 }
 
@@ -41,15 +44,26 @@ function applyDesign(settings: DesignSettings) {
     root.style.setProperty('--color-paper-border', `hsl(${h}, 10%, 20%)`)
     root.style.setProperty('--color-paper-card',   `hsl(${h}, 8%, 15%)`)
   } else {
-    root.style.setProperty('--color-paper',        `hsl(${h}, 10%, 97%)`)
-    root.style.setProperty('--color-paper-warm',   `hsl(${h}, 10%, 94%)`)
-    root.style.setProperty('--color-paper-border', `hsl(${h}, 12%, 87%)`)
+    root.style.setProperty('--color-paper',        `hsl(${h}, 6%, 98%)`)
+    root.style.setProperty('--color-paper-warm',   `hsl(${h}, 6%, 95%)`)
+    root.style.setProperty('--color-paper-border', `hsl(${h}, 8%, 87%)`)
     root.style.setProperty('--color-paper-card',   '#ffffff')
   }
 
   // 폰트
   const fontFamily = FONT_MAP[settings.font] || FONT_MAP['noto-sans']
   root.style.setProperty('--font-body', fontFamily)
+
+  // 라운드
+  root.style.setProperty('--radius', `${settings.radius ?? 3}px`)
+
+  // 폰트 사이즈 배율
+  const s = settings.fontSize ?? 1
+  root.style.setProperty('--fs-xs',   `${Math.round(12 * s)}px`)
+  root.style.setProperty('--fs-sm',   `${Math.round(14 * s)}px`)
+  root.style.setProperty('--fs-base', `${Math.round(16 * s)}px`)
+  root.style.setProperty('--fs-lg',   `${Math.round(19 * s)}px`)
+  root.style.setProperty('--fs-xl',   `${Math.round(23 * s)}px`)
 }
 
 export function useDesign() {
@@ -72,6 +86,8 @@ export function useDesign() {
     settings,
     setFont: (font: FontFamily) => setSettings(prev => ({ ...prev, font })),
     setAccentHue: (hue: number) => setSettings(prev => ({ ...prev, accentHue: hue })),
-    reset: () => setSettings({ font: 'noto-sans', accentHue: 28 }),
+    setRadius: (radius: number) => setSettings(prev => ({ ...prev, radius })),
+    setFontSize: (fontSize: number) => setSettings(prev => ({ ...prev, fontSize })),
+    reset: () => setSettings({ font: 'noto-sans', accentHue: 28, radius: 3, fontSize: 1 }),
   }
 }

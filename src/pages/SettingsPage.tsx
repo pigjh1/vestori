@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Entry, FontFamily } from '@/types'
 import { exportEntries, type ExportResult } from '@/utils/exportMd'
+import { exportBackup, importBackup, type MergeStrategy } from '@/utils/backup'
 import { clearAllImages, getStorageSize } from '@/lib/imageDB'
 import { useDesign } from '@/hooks/useDesign'
 import { useMoodRecords } from '@/hooks/useMoodRecords'
@@ -66,11 +67,12 @@ export function SettingsPage({ entries }: Props) {
   const { habits } = useRoutine()
   const { retros, deleteAll: deleteAllRetros } = useRetrospect()
   const { records: dietRecords } = useDiet()
-  const { settings, setFont, setAccentHue, reset } = useDesign()
+  const { settings, setFont, setAccentHue, setRadius, setFontSize, reset } = useDesign()
   const [preset, setPreset] = useState<RangePreset>('1d')
   const [customStart, setCustomStart] = useState(today)
   const [customEnd, setCustomEnd] = useState(today)
   const [exporting, setExporting] = useState(false)
+  const [asZip, setAsZip] = useState(false)
   const [result, setResult] = useState<ExportResult | null>(null)
   const [exportError, setExportError] = useState<string | null>(null)
   const [imageSize, setImageSize] = useState<number | null>(null)
@@ -88,6 +90,13 @@ export function SettingsPage({ entries }: Props) {
   const [deleteDietDone, setDeleteDietDone] = useState(false)
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false)
   const [deleteAllDone, setDeleteAllDone] = useState(false)
+  const [backupExporting, setBackupExporting] = useState(false)
+  const [backupImporting, setBackupImporting] = useState(false)
+  const [importStrategy, setImportStrategy] = useState<MergeStrategy>('merge')
+  const [importResult, setImportResult] = useState<{ entryCount: number; imageCount: number } | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
+  const [deviceNote, setDeviceNote] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { getStorageSize().then(setImageSize) }, [])
 
@@ -100,7 +109,7 @@ export function SettingsPage({ entries }: Props) {
   const handleExport = async () => {
     if (previewCount === 0) return
     setExporting(true); setResult(null); setExportError(null)
-    try { setResult(await exportEntries(entries, moodEntries, habits, retros, startDate, endDate)) }
+    try { setResult(await exportEntries(entries, moodEntries, habits, retros, startDate, endDate, asZip)) }
     catch { setExportError('내보내기 중 오류가 발생했어요.') }
     finally { setExporting(false) }
   }
@@ -198,7 +207,34 @@ export function SettingsPage({ entries }: Props) {
           </div>
         </div>
 
-        <button onClick={reset} className="mt-4 text-sm text-ink-faint hover:text-accent border-none bg-none p-0 cursor-pointer transition-colors">기본값으로 초기화</button>
+        {/* 라운드 */}
+        <div>
+          <Label>모서리 둥글기</Label>
+          <div className="flex items-center gap-3 bg-paper-card border border-paper-border rounded-sm px-4 py-3">
+            <span className="text-sm text-ink-faint flex-shrink-0">각짐</span>
+            <input type="range" min={0} max={12} step={1} value={settings.radius ?? 3}
+              onChange={e => setRadius(Number(e.target.value))}
+              className="flex-1 accent-[var(--color-accent)]" />
+            <span className="text-sm text-ink-faint flex-shrink-0">둥글</span>
+            <div className="w-6 h-6 bg-ink/15 flex-shrink-0 border border-ink/20"
+              style={{ borderRadius: `${settings.radius ?? 3}px` }} />
+          </div>
+        </div>
+
+        {/* 폰트 크기 */}
+        <div>
+          <Label>글자 크기</Label>
+          <div className="flex items-center gap-3 bg-paper-card border border-paper-border rounded-sm px-4 py-3">
+            <span className="text-sm text-ink-faint flex-shrink-0">작게</span>
+            <input type="range" min={0.85} max={1.2} step={0.05} value={settings.fontSize ?? 1}
+              onChange={e => setFontSize(Number(e.target.value))}
+              className="flex-1 accent-[var(--color-accent)]" />
+            <span className="text-sm text-ink-faint flex-shrink-0">크게</span>
+            <span className="text-sm text-ink-muted flex-shrink-0 w-8 text-right">{Math.round((settings.fontSize ?? 1) * 100)}%</span>
+          </div>
+        </div>
+
+        <button onClick={reset} className="mt-4 text-sm text-ink-faint hover:text-ink-muted border-none bg-none p-0 cursor-pointer transition-colors">기본값으로 초기화</button>
       </section>
 
       {/* ── 내보내기 ── */}
@@ -243,6 +279,14 @@ export function SettingsPage({ entries }: Props) {
           <p className="text-xs text-ink-faint mt-1">
             {previewCount > 0 ? <><span className="text-ink-muted">{previewCount}개</span>의 기록</> : '해당 기간에 기록이 없어요'}
           </p>
+        </div>
+
+        <div className="flex items-center gap-3 py-2">
+          <button onClick={() => setAsZip(false)}
+            className={`btn-sm ${!asZip ? 'btn-on' : 'btn-off'}`}>파일별로</button>
+          <button onClick={() => setAsZip(true)}
+            className={`btn-sm ${asZip ? 'btn-on' : 'btn-off'}`}>📦 압축 파일</button>
+          <span className="text-sm text-ink-faint">{asZip ? 'vestori-날짜.zip' : '파일마다 개별 다운로드'}</span>
         </div>
 
         <button onClick={handleExport} disabled={exporting || previewCount === 0}
@@ -375,7 +419,7 @@ export function SettingsPage({ entries }: Props) {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className="text-sm text-ink-muted mb-0.5">식단</p>
-                <p className="text-sm text-ink-faint"><span className="text-ink">{Object.keys(dietRecords).length}일</span>의 식단 기록</p>
+                <p className="text-sm text-ink-faint"><span className="text-ink-muted">{Object.keys(dietRecords).length}일</span>의 식단 기록</p>
               </div>
               {Object.keys(dietRecords).length > 0 && (
                 <button onClick={handleDeleteDiet}
@@ -391,6 +435,86 @@ export function SettingsPage({ entries }: Props) {
               </div>
             )}
             {deleteDietDone && <p className="text-sm text-ink-muted mt-1">✓ 식단 기록이 삭제됐어요</p>}
+          </div>
+        </div>
+      </section>
+
+      {/* 백업 & 가져오기 */}
+      <section>
+        <SectionTitle>백업 / 가져오기</SectionTitle>
+        <div className="flex flex-col gap-3">
+
+          {/* 백업 내보내기 */}
+          <div className="p-4 bg-paper-card border border-paper-border rounded-sm flex flex-col gap-3">
+            <div>
+              <p className="text-base text-ink mb-0.5">백업 내보내기</p>
+              <p className="text-sm text-ink-faint">모든 기록·사진·설정을 하나의 파일로 저장해요</p>
+            </div>
+            <input type="text" value={deviceNote} onChange={e => setDeviceNote(e.target.value)}
+              placeholder="기기 메모 (예: 아이패드, 선택사항)"
+              className="w-full border border-paper-border rounded-sm px-3 py-2 text-sm outline-none focus:border-ink/30" />
+            <button onClick={async () => {
+              setBackupExporting(true)
+              try { await exportBackup(deviceNote) }
+              finally { setBackupExporting(false) }
+            }} disabled={backupExporting} className="btn-primary w-full">
+              {backupExporting ? '백업 파일 생성 중...' : '📦 .json 백업 파일 내보내기'}
+            </button>
+          </div>
+
+          {/* 가져오기 */}
+          <div className="p-4 bg-paper-card border border-paper-border rounded-sm flex flex-col gap-3">
+            <div>
+              <p className="text-base text-ink mb-0.5">가져오기</p>
+              <p className="text-sm text-ink-faint">다른 기기에서 내보낸 .json 백업 파일을 불러와요</p>
+            </div>
+
+            {/* 병합 방식 */}
+            <div className="flex gap-2">
+              <button onClick={() => setImportStrategy('merge')}
+                className={`btn-sm ${importStrategy === 'merge' ? 'btn-on' : 'btn-off'} flex-1`}>
+                합치기
+              </button>
+              <button onClick={() => setImportStrategy('overwrite')}
+                className={`btn-sm ${importStrategy === 'overwrite' ? 'btn-on' : 'btn-off'} flex-1`}>
+                덮어쓰기
+              </button>
+            </div>
+            <p className="text-sm text-ink-faint -mt-1">
+              {importStrategy === 'merge'
+                ? '기존 데이터를 유지하고 새 데이터를 추가해요'
+                : '⚠ 기존 데이터를 모두 지우고 백업으로 교체해요'}
+            </p>
+
+            <input ref={fileInputRef} type="file" accept=".json" className="hidden"
+              onChange={async e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setBackupImporting(true)
+                setImportError(null)
+                setImportResult(null)
+                try {
+                  const result = await importBackup(file, importStrategy)
+                  setImportResult(result)
+                  setTimeout(() => window.location.reload(), 1500)
+                } catch (err: any) {
+                  setImportError(err.message ?? '가져오기 중 오류가 발생했어요')
+                } finally {
+                  setBackupImporting(false)
+                  if (fileInputRef.current) fileInputRef.current.value = ''
+                }
+              }} />
+
+            <button onClick={() => fileInputRef.current?.click()}
+              disabled={backupImporting}
+              className="btn-primary w-full">
+              {backupImporting ? '가져오는 중...' : '📂 백업 파일 선택'}
+            </button>
+
+            {importResult && (
+              <p className="text-sm text-ink-muted">✓ 가져오기 완료 · 잠시 후 새로고침됩니다</p>
+            )}
+            {importError && <p className="text-sm text-red-400">{importError}</p>}
           </div>
         </div>
       </section>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useDiet, MEAL_LABELS, MEAL_ORDER, type MealType, type DietItem } from '@/hooks/useDiet'
 import { getDateKey, pad } from '@/utils/date'
 
@@ -25,24 +25,49 @@ function nextDay(dateKey: string): string {
   return getDateKey(d.toISOString())
 }
 
-interface AddModalProps {
+// 인라인 이름 편집 컴포넌트
+function EditableName({ item, onUpdate }: { item: DietItem; onUpdate: (name: string) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(item.name)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { if (editing) inputRef.current?.focus() }, [editing])
+
+  const commit = () => {
+    const trimmed = value.trim()
+    if (trimmed && trimmed !== item.name) onUpdate(trimmed)
+    else setValue(item.name)
+    setEditing(false)
+  }
+
+  if (editing) return (
+    <input ref={inputRef} value={value}
+      onChange={e => setValue(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setValue(item.name); setEditing(false) } }}
+      className="flex-1 bg-transparent border-b border-ink/30 outline-none text-base text-ink px-0 py-0" />
+  )
+
+  return (
+    <span className="flex-1 text-base text-ink cursor-text hover:underline decoration-ink-faint underline-offset-2 transition-all"
+      onClick={() => setEditing(true)} title="클릭해서 수정">
+      {item.name}
+    </span>
+  )
+}
+
+// 음식 추가 모달
+function AddModal({ meal, onSave, onClose }: {
   meal: MealType
   onSave: (item: Omit<DietItem, 'id'>) => void
   onClose: () => void
-}
-
-function AddModal({ meal, onSave, onClose }: AddModalProps) {
+}) {
   const [name, setName] = useState('')
-  const [calories, setCalories] = useState('')
   const [amount, setAmount] = useState('')
 
   const handleSave = () => {
     if (!name.trim()) return
-    onSave({
-      name: name.trim(),
-      calories: calories ? Number(calories) : null,
-      amount: amount.trim(),
-    })
+    onSave({ name: name.trim(), amount: amount.trim() })
     onClose()
   }
 
@@ -52,29 +77,20 @@ function AddModal({ meal, onSave, onClose }: AddModalProps) {
       <div className="relative bg-paper border border-paper-border rounded-sm w-full max-w-sm shadow-xl z-10">
         <div className="px-5 pt-5 pb-6 flex flex-col gap-4">
           <p className="text-base text-ink">{MEAL_LABELS[meal]}에 추가</p>
-
           <div className="flex flex-col gap-1.5">
             <label className="text-sm text-ink-muted">음식 이름</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)}
               placeholder="예: 된장찌개, 닭가슴살" autoFocus
+              onKeyDown={e => e.key === 'Enter' && handleSave()}
               className="w-full border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-ink/30" />
           </div>
-
-          <div className="flex gap-3">
-            <div className="flex flex-col gap-1.5 flex-1">
-              <label className="text-sm text-ink-muted">칼로리 (kcal)</label>
-              <input type="number" value={calories} onChange={e => setCalories(e.target.value)}
-                placeholder="예: 350"
-                className="w-full border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-ink/30" />
-            </div>
-            <div className="flex flex-col gap-1.5 flex-1">
-              <label className="text-sm text-ink-muted">양</label>
-              <input type="text" value={amount} onChange={e => setAmount(e.target.value)}
-                placeholder="예: 1인분, 200g"
-                className="w-full border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-ink/30" />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-ink-muted">양 (선택)</label>
+            <input type="text" value={amount} onChange={e => setAmount(e.target.value)}
+              placeholder="예: 1인분, 200g"
+              onKeyDown={e => e.key === 'Enter' && handleSave()}
+              className="w-full border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-ink/30" />
           </div>
-
           <div className="flex gap-2 pt-1">
             <button onClick={handleSave} disabled={!name.trim()} className="btn-primary flex-1">추가</button>
             <button onClick={onClose} className="btn-sm btn-off">취소</button>
@@ -86,27 +102,19 @@ function AddModal({ meal, onSave, onClose }: AddModalProps) {
 }
 
 export function DietPage() {
-  const { getDay, addItem, removeItem, totalCalories } = useDiet()
+  const { getDay, addItem, updateItem, removeItem, reorderItem } = useDiet()
   const today = todayKey()
   const [dateKey, setDateKey] = useState(today)
   const [addingMeal, setAddingMeal] = useState<MealType | null>(null)
 
   const day = getDay(dateKey)
-  const total = totalCalories(dateKey)
   const isToday = dateKey === today
-  const isFuture = dateKey > today
 
   return (
     <div>
-      {/* 헤더 */}
       <div className="flex items-baseline gap-3 mb-5">
-        <span className="text-xl text-ink" style={{ fontStyle: 'italic' }}>식단</span>
+        <span className="text-xl text-ink italic">식단</span>
         <div className="flex-1 h-px bg-paper-border" />
-        {total != null && (
-          <span className="text-sm text-ink-muted">
-            총 <span className="text-ink">{total.toLocaleString()}</span> kcal
-          </span>
-        )}
       </div>
 
       {/* 날짜 네비게이션 */}
@@ -115,7 +123,7 @@ export function DietPage() {
           className="btn-sm btn-off w-8 h-8 flex items-center justify-center p-0">‹</button>
         <div className="flex-1 text-center">
           <p className="text-base text-ink">{formatDate(dateKey)}</p>
-          {isToday && <p className="text-sm text-ink-muted">오늘</p>}
+          {isToday && <p className="text-sm text-ink-faint">오늘</p>}
         </div>
         <button onClick={() => setDateKey(nextDay(dateKey))} disabled={isToday}
           className={`btn-sm ${isToday ? 'btn-off opacity-30 cursor-not-allowed' : 'btn-off'} w-8 h-8 flex items-center justify-center p-0`}>›</button>
@@ -125,39 +133,36 @@ export function DietPage() {
       <div className="flex flex-col gap-4">
         {MEAL_ORDER.map(meal => {
           const items = day[meal]
-          const mealCal = items.reduce((s, i) => s + (i.calories ?? 0), 0)
-          const hasCal = items.some(i => i.calories != null)
-
           return (
             <div key={meal} className="border border-paper-border rounded-sm overflow-hidden">
-              {/* 식사 헤더 */}
+              {/* 헤더 */}
               <div className="flex items-center justify-between px-4 py-3 bg-paper-warm">
-                <div className="flex items-center gap-2">
-                  <span className="text-base text-ink">{MEAL_LABELS[meal]}</span>
-                  {hasCal && <span className="text-sm text-ink-muted">{mealCal} kcal</span>}
-                </div>
-                {!isFuture && (
-                  <button onClick={() => setAddingMeal(meal)}
-                    className="w-7 h-7 flex items-center justify-center rounded-sm border border-paper-border text-ink-muted hover:text-ink hover:border-ink/30 transition-colors cursor-pointer text-lg leading-none">
-                    +
-                  </button>
-                )}
+                <span className="text-base text-ink">{MEAL_LABELS[meal]}</span>
+                <button onClick={() => setAddingMeal(meal)}
+                  className="w-7 h-7 flex items-center justify-center rounded-sm border border-paper-border text-ink-faint hover:text-ink hover:border-ink/30 transition-colors cursor-pointer text-lg leading-none">
+                  +
+                </button>
               </div>
 
-              {/* 음식 목록 */}
+              {/* 항목 */}
               {items.length > 0 ? (
                 <div className="divide-y divide-paper-border">
-                  {items.map(item => (
-                    <div key={item.id} className="flex items-center gap-3 px-4 py-2.5 group">
-                      <div className="flex-1 min-w-0">
-                        <span className="text-base text-ink">{item.name}</span>
-                        {item.amount && (
-                          <span className="text-sm text-ink-faint ml-2">{item.amount}</span>
-                        )}
+                  {items.map((item, idx) => (
+                    <div key={item.id} className="flex items-center gap-2 px-4 py-2.5 group">
+                      {/* 순서 이동 */}
+                      <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <button onClick={() => reorderItem(dateKey, meal, item.id, 'up')} disabled={idx === 0}
+                          className="text-xs text-ink-faint hover:text-ink disabled:opacity-20 cursor-pointer border-none bg-none p-0 leading-none">▲</button>
+                        <button onClick={() => reorderItem(dateKey, meal, item.id, 'down')} disabled={idx === items.length - 1}
+                          className="text-xs text-ink-faint hover:text-ink disabled:opacity-20 cursor-pointer border-none bg-none p-0 leading-none">▼</button>
                       </div>
-                      {item.calories != null && (
-                        <span className="text-sm text-ink-muted flex-shrink-0">{item.calories} kcal</span>
-                      )}
+
+                      {/* 이름 (클릭 시 인라인 편집) */}
+                      <EditableName item={item} onUpdate={name => updateItem(dateKey, meal, item.id, name)} />
+
+                      {item.amount && <span className="text-sm text-ink-faint flex-shrink-0">{item.amount}</span>}
+
+                      {/* 삭제 */}
                       <button onClick={() => removeItem(dateKey, meal, item.id)}
                         className="text-sm text-ink-faint hover:text-ink opacity-0 group-hover:opacity-100 transition-all cursor-pointer border-none bg-none p-0 flex-shrink-0">
                         ×
@@ -175,13 +180,10 @@ export function DietPage() {
         })}
       </div>
 
-      {/* 입력 모달 */}
       {addingMeal && (
-        <AddModal
-          meal={addingMeal}
+        <AddModal meal={addingMeal}
           onSave={item => addItem(dateKey, addingMeal, item)}
-          onClose={() => setAddingMeal(null)}
-        />
+          onClose={() => setAddingMeal(null)} />
       )}
     </div>
   )

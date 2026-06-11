@@ -40,11 +40,24 @@ const VIEW_ICONS: Record<RecordView, JSX.Element> = {
       <line x1="6.5" y1="11.5" x2="9" y2="11.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   ),
+  photos: (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+      <rect x="1.5" y="3" width="12" height="9" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="5" cy="6.5" r="1.3" stroke="currentColor" strokeWidth="1.1"/>
+      <path d="M1.5 10l3-3 2.5 2.5 2.5-3L13 10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  places: (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+      <path d="M7.5 1.5C5.0 1.5 3 3.5 3 6c0 3.5 4.5 7.5 4.5 7.5S12 9.5 12 6c0-2.5-2-4.5-4.5-4.5z" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="7.5" cy="6" r="1.5" stroke="currentColor" strokeWidth="1.2"/>
+    </svg>
+  ),
 }
 
-const VIEW_LABELS: Record<RecordView, string> = { feed: '기본', calendar: '달력', timeline: '타임라인' }
+const VIEW_LABELS: Record<RecordView, string> = { feed: '기본', calendar: '달력', timeline: '타임라인', photos: '사진', places: '지도' }
 
-const VIEW_ORDER: RecordView[] = ['feed', 'timeline', 'calendar']
+const VIEW_ORDER: RecordView[] = ['feed', 'timeline', 'calendar', 'photos', 'places']
 
 interface HeaderProps {
   pageMode: AnyPage

@@ -17,7 +17,6 @@ export const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack']
 export interface DietItem {
   id: string
   name: string
-  calories: number | null
   amount: string
 }
 
@@ -58,17 +57,29 @@ export function useDiet() {
     })
   }
 
+  const reorderItem = (date: string, meal: MealType, id: string, dir: 'up' | 'down') => {
+    setRecords(prev => {
+      const day = prev[date] ?? emptyDay()
+      const items = [...day[meal]]
+      const idx = items.findIndex(i => i.id === id)
+      if (idx === -1) return prev
+      const newIdx = dir === 'up' ? idx - 1 : idx + 1
+      if (newIdx < 0 || newIdx >= items.length) return prev
+      ;[items[idx], items[newIdx]] = [items[newIdx], items[idx]]
+      return { ...prev, [date]: { ...day, [meal]: items } }
+    })
+  }
+
   const deleteDay = (date: string) => {
     setRecords(prev => { const n = { ...prev }; delete n[date]; return n })
   }
 
-  const totalCalories = (date: string): number | null => {
-    const day = records[date]
-    if (!day) return null
-    const items = MEAL_ORDER.flatMap(m => day[m])
-    if (items.every(i => i.calories == null)) return null
-    return items.reduce((s, i) => s + (i.calories ?? 0), 0)
+  const updateItem = (date: string, meal: MealType, id: string, name: string) => {
+    setRecords(prev => {
+      const day = prev[date] ?? emptyDay()
+      return { ...prev, [date]: { ...day, [meal]: day[meal].map(i => i.id === id ? { ...i, name } : i) } }
+    })
   }
 
-  return { records, getDay, addItem, removeItem, deleteDay, totalCalories }
+  return { records, getDay, addItem, updateItem, removeItem, reorderItem, deleteDay }
 }

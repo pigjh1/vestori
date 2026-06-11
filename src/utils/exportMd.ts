@@ -116,6 +116,18 @@ function downloadFile(filename: string, content: string) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
 }
 
+async function downloadZip(files: Record<string, string>) {
+  const JSZip = (await import('jszip')).default
+  const zip = new JSZip()
+  Object.entries(files).forEach(([name, content]) => zip.file(`${name}.md`, content))
+  const blob = await zip.generateAsync({ type: 'blob' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  const date = new Date().toISOString().slice(0, 10)
+  a.href = url; a.download = `vestori-${date}.zip`
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url)
+}
+
 export interface ExportResult { fileCount: number; dayCount: number }
 
 export async function exportEntries(
@@ -123,8 +135,9 @@ export async function exportEntries(
   moodRecords: any[],
   habits: any[],
   retros: Record<string, any>,
-  startDate: string, 
-  endDate: string
+  startDate: string,
+  endDate: string,
+  asZip = false
 ): Promise<ExportResult> {
   const days = eachDayOfInterval(new Date(startDate), new Date(endDate))
   const allFiles: Record<string, string> = {}
@@ -196,9 +209,14 @@ export async function exportEntries(
   }
 
   const fileEntries = Object.entries(allFiles)
-  for (let i = 0; i < fileEntries.length; i++) {
-    downloadFile(fileEntries[i][0], fileEntries[i][1])
-    if (i < fileEntries.length - 1) await new Promise(r => setTimeout(r, 300))
+
+  if (asZip) {
+    await downloadZip(allFiles)
+  } else {
+    for (let i = 0; i < fileEntries.length; i++) {
+      downloadFile(fileEntries[i][0], fileEntries[i][1])
+      if (i < fileEntries.length - 1) await new Promise(r => setTimeout(r, 300))
+    }
   }
   return { fileCount: fileEntries.length, dayCount }
 }

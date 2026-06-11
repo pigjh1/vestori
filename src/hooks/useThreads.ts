@@ -20,10 +20,10 @@ export function useThreads() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(posts)) } catch {}
   }, [posts])
 
-  const addPost = useCallback((entryId: string, text: string, imageIds: string[] = []) => {
+  const addPost = useCallback((entryId: string, text: string, imageIds: string[] = [], customTime?: string) => {
     const post: ThreadPost = {
       id: uuidv4(), entryId, text, imageIds,
-      createdAt: new Date().toISOString(),
+      createdAt: customTime ?? new Date().toISOString(),
     }
     setPosts(prev => [...prev, post])
     return post.id

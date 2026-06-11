@@ -6,6 +6,8 @@ import { SearchBar } from '@/components/SearchBar'
 import { Feed } from '@/components/Feed'
 import { CalendarMonth } from '@/components/CalendarMonth'
 import { CalendarTimeline } from '@/components/CalendarTimeline'
+import { PhotosView } from '@/components/PhotosView'
+import { PlacesView } from '@/components/PlacesView'
 import { MoodPage } from '@/pages/MoodPage'
 import { RoutinePage } from '@/pages/RoutinePage'
 import { DietPage } from '@/pages/DietPage'
@@ -104,6 +106,8 @@ export function App() {
               </>
             )}
             {recordView === 'timeline' && <CalendarTimeline entries={filtered} {...feedProps} />}
+            {recordView === 'photos'   && <PhotosView entries={filtered} />}
+            {recordView === 'places'   && <PlacesView entries={filtered} />}
           </>
         )}
 

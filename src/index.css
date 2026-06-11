@@ -4,18 +4,24 @@
 
 @layer base {
   :root {
-    --color-paper:        #f5f1eb;
-    --color-paper-warm:   #ede7dc;
-    --color-paper-border: #d8cfc3;
+    --color-paper:        #faf9f7;
+    --color-paper-warm:   #f2f0ec;
+    --color-paper-border: #ddd8d1;
     --color-paper-card:   #ffffff;
-    --color-ink:          #1c1916;
-    --color-ink-muted:    #4a443d;
-    --color-ink-faint:    #7a726a;
+    --color-ink:          #0f0e0c;
+    --color-ink-muted:    #2c2925;
+    --color-ink-faint:    #6b625a;
     --color-accent:       #7a4f2d;
     --color-accent-light: #b5895a;
     --color-accent-pale:  #ede0d1;
     --font-body:          "Noto Sans KR", sans-serif;
     --font-serif:         "Noto Serif KR", serif;
+    --radius:             3px;
+    --fs-xs:              12px;
+    --fs-sm:              14px;
+    --fs-base:            16px;
+    --fs-lg:              19px;
+    --fs-xl:              23px;
   }
 
   .dark {
@@ -93,4 +99,12 @@
 
   /* safe-area (iPhone 홈 인디케이터) */
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+}
+
+@layer utilities {
+  /* radius CSS 변수 적용 */
+  .rounded-sm  { border-radius: var(--radius) !important; }
+  .rounded     { border-radius: calc(var(--radius) * 2) !important; }
+  .rounded-md  { border-radius: calc(var(--radius) * 3) !important; }
+  .rounded-lg  { border-radius: calc(var(--radius) * 4) !important; }
 }

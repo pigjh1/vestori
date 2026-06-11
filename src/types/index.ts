@@ -66,4 +66,6 @@ export const FONTS: { id: FontFamily; label: string; desc: string }[] = [
 export interface DesignSettings {
   font: FontFamily
   accentHue: number
+  radius: number    // 0~12 (px)
+  fontSize: number  // 0.85~1.2 (배율)
 }

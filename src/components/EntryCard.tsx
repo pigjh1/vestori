@@ -149,7 +149,7 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
         )}
         {entry.tags.length > 0 && entry.tags.map(tag => (
           <button key={tag} onClick={() => onTagClick?.(tag)}
-            className="text-sm text-ink-faint hover:text-ink transition-colors cursor-pointer bg-none border-none p-0">
+            className="text-xs text-ink-faint hover:text-ink transition-colors cursor-pointer bg-none border-none p-0">
             #{tag}
           </button>
         ))}
@@ -160,7 +160,7 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
         <button onClick={startEdit}
           className="text-xs text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">수정</button>
         <button onClick={() => onDelete(entry.id)}
-          className="text-xs text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">지우기</button>
+          className="text-xs text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">삭제</button>
       </div>
 
       {/* 타래 */}
