@@ -97,7 +97,26 @@
            transition-colors bg-transparent border-none p-0;
   }
 
-  /* safe-area (iPhone 홈 인디케이터) */
+  /* 탭 유틸리티 (언더라인 스타일) */
+  .tab-bar {
+    @apply flex border-b border-paper-border;
+  }
+  .tab {
+    @apply px-4 py-2 text-sm cursor-pointer bg-transparent
+           transition-all -mb-px;
+    border: none;
+    border-bottom: 2px solid transparent;
+  }
+  .tab-on {
+    @apply text-ink font-semibold;
+    border-bottom: 2px solid var(--color-ink);
+  }
+  .tab-off {
+    @apply text-ink-faint;
+  }
+  .tab-off:hover {
+    @apply text-ink-muted;
+  }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
 

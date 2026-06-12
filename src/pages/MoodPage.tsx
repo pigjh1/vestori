@@ -241,10 +241,10 @@ export function MoodPage() {
       )}
 
       {/* 뷰 토글 */}
-      <div className="flex gap-2 mb-5">
+      <div className="tab-bar mb-5">
         {(['year', 'month', 'week'] as const).map(v => (
           <button key={v} onClick={() => setMoodView(v)}
-            className={`btn-sm btn-on`}>
+            className={`tab flex-1 text-center ${moodView === v ? 'tab-on' : 'tab-off'}`}>
             {v === 'year' ? '연간' : v === 'month' ? '월간' : '주간'}
           </button>
         ))}

@@ -117,17 +117,16 @@ export function RetrospectPage() {
 
   return (
     <div>
-      <div className="flex items-baseline gap-3 mb-5">
-        <span className="text-lg italic text-ink">회고</span>
-        <div className="flex-1 h-px bg-paper-border" />
-        <span className="text-xs text-ink-faint">{savedKeys.length}개 저장됨</span>
-      </div>
+      {/* 저장 카운트 */}
+      {savedKeys.length > 0 && (
+        <p className="text-sm text-ink-faint mb-4">{savedKeys.length}개 저장됨</p>
+      )}
 
       {/* 탭 */}
-      <div className="flex gap-2 mb-6">
+      <div className="tab-bar mb-6">
         {(['weekly', 'monthly'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`btn-sm btn-on`}>
+            className={`tab flex-1 text-center ${tab === t ? 'tab-on' : 'tab-off'}`}>
             {t === 'weekly' ? '주간' : '월간'}
           </button>
         ))}

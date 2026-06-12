@@ -31,12 +31,24 @@ function calcStreak(habitId: string, checks: CheckMap): number {
   return streak
 }
 
-const DEFAULT_HABITS: Habit[] = [
-  '물 마시기', '운동', '일기쓰기', '손톱관리', '영양제', '책읽기'
-].map(name => ({ id: uuidv4(), name, createdAt: new Date().toISOString(), streak: 0 }))
+const DEFAULT_HABIT_NAMES = ['물 마시기', '운동', '일기쓰기', '손톱관리', '영양제', '책읽기']
+
+const DEFAULT_HABITS: Habit[] = DEFAULT_HABIT_NAMES
+  .map(name => ({ id: uuidv4(), name, createdAt: new Date().toISOString(), streak: 0 }))
+
+function loadHabits(): Habit[] {
+  const existing = load<Habit[]>(HABITS_KEY, [])
+  if (existing.length === 0) return DEFAULT_HABITS
+  // 기존 루틴에 없는 기본 항목 추가
+  const existingNames = new Set(existing.map(h => h.name))
+  const missing = DEFAULT_HABIT_NAMES
+    .filter(name => !existingNames.has(name))
+    .map(name => ({ id: uuidv4(), name, createdAt: new Date().toISOString(), streak: 0 }))
+  return [...existing, ...missing]
+}
 
 export function useRoutine() {
-  const [habits, setHabits] = useState<Habit[]>(() => load(HABITS_KEY, DEFAULT_HABITS))
+  const [habits, setHabits] = useState<Habit[]>(loadHabits)
   const [checks, setChecks] = useState<CheckMap>(() => load(CHECKS_KEY, {}))
 
   useEffect(() => { try { localStorage.setItem(HABITS_KEY, JSON.stringify(habits)) } catch {} }, [habits])

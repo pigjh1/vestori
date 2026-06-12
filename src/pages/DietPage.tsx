@@ -112,11 +112,6 @@ export function DietPage() {
 
   return (
     <div>
-      <div className="flex items-baseline gap-3 mb-5">
-        <span className="text-xl text-ink italic">식단</span>
-        <div className="flex-1 h-px bg-paper-border" />
-      </div>
-
       {/* 날짜 네비게이션 */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => setDateKey(prevDay(dateKey))}

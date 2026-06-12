@@ -17,21 +17,15 @@ export function SearchBar({ query, onQueryChange, onTagClick, onCategoryClick, a
   return (
     <div className="mb-4 flex flex-col gap-3">
       {/* 카테고리 탭 */}
-      <div className="flex items-center gap-1 overflow-x-auto">
+      <div className="tab-bar">
         <button
           onClick={() => activeCategory && onCategoryClick(activeCategory)}
-          className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-sm border transition-colors cursor-pointer
-            ${!activeCategory
-              ? 'bg-ink text-paper border-ink'
-              : 'bg-transparent text-ink-faint border-paper-border hover:text-ink-muted'}`}>
+          className={`tab flex-1 text-center ${!activeCategory ? 'tab-on' : 'tab-off'}`}>
           전체
         </button>
         {CATEGORIES.map(({ id, label }) => (
           <button key={id} onClick={() => onCategoryClick(id)}
-            className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-sm border transition-colors cursor-pointer
-              ${activeCategory === id
-                ? 'bg-ink text-paper border-ink'
-                : 'bg-transparent text-ink-faint border-paper-border hover:text-ink-muted'}`}>
+            className={`tab flex-1 text-center ${activeCategory === id ? 'tab-on' : 'tab-off'}`}>
             {label}
           </button>
         ))}
