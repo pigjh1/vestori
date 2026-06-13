@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useDiet, MEAL_LABELS, MEAL_ORDER, type MealType, type DietItem } from '@/hooks/useDiet'
 import { getDateKey, pad } from '@/utils/date'
+import { IconChevronLeft, IconChevronRight, IconArrowUp, IconArrowDown, IconX } from '@/components/Icon'
 
 function todayKey() {
   const d = new Date()
@@ -115,13 +116,13 @@ export function DietPage() {
       {/* 날짜 네비게이션 */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => setDateKey(prevDay(dateKey))}
-          className="btn-sm btn-off w-8 h-8 flex items-center justify-center p-0">‹</button>
+          className="btn-sm btn-off w-8 h-8 flex items-center justify-center p-0"><IconChevronLeft size={14} /></button>
         <div className="flex-1 text-center">
           <p className="text-base text-ink">{formatDate(dateKey)}</p>
           {isToday && <p className="text-sm text-ink-faint">오늘</p>}
         </div>
         <button onClick={() => setDateKey(nextDay(dateKey))} disabled={isToday}
-          className={`btn-sm ${isToday ? 'btn-off opacity-30 cursor-not-allowed' : 'btn-off'} w-8 h-8 flex items-center justify-center p-0`}>›</button>
+          className={`btn-sm ${isToday ? 'btn-off opacity-30 cursor-not-allowed' : 'btn-off'} w-8 h-8 flex items-center justify-center p-0`}><IconChevronRight size={14} /></button>
       </div>
 
       {/* 식사 섹션 */}
@@ -147,9 +148,9 @@ export function DietPage() {
                       {/* 순서 이동 */}
                       <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                         <button onClick={() => reorderItem(dateKey, meal, item.id, 'up')} disabled={idx === 0}
-                          className="text-xs text-ink-faint hover:text-ink disabled:opacity-20 cursor-pointer border-none bg-none p-0 leading-none">▲</button>
+                          className="text-ink-faint hover:text-ink disabled:opacity-20 cursor-pointer border-none bg-none p-0"><IconArrowUp size={12} /></button>
                         <button onClick={() => reorderItem(dateKey, meal, item.id, 'down')} disabled={idx === items.length - 1}
-                          className="text-xs text-ink-faint hover:text-ink disabled:opacity-20 cursor-pointer border-none bg-none p-0 leading-none">▼</button>
+                          className="text-ink-faint hover:text-ink disabled:opacity-20 cursor-pointer border-none bg-none p-0"><IconArrowDown size={12} /></button>
                       </div>
 
                       {/* 이름 (클릭 시 인라인 편집) */}
@@ -159,9 +160,7 @@ export function DietPage() {
 
                       {/* 삭제 */}
                       <button onClick={() => removeItem(dateKey, meal, item.id)}
-                        className="text-sm text-ink-faint hover:text-ink opacity-0 group-hover:opacity-100 transition-all cursor-pointer border-none bg-none p-0 flex-shrink-0">
-                        ×
-                      </button>
+                        className="text-ink-faint hover:text-ink opacity-0 group-hover:opacity-100 transition-all cursor-pointer border-none bg-none p-0 flex-shrink-0"><IconX size={13} /></button>
                     </div>
                   ))}
                 </div>

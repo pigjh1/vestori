@@ -6,21 +6,25 @@ import { ImageUploader } from './ImageUploader'
 import { ImageGallery } from './ImageGallery'
 import { FoodMetaFields } from './FoodMetaFields'
 import { ThreadView } from './ThreadView'
+import { IconMapPin, IconClock, IconStar, IconX } from './Icon'
+
+import { RelatedEntries } from './RelatedEntries'
 
 interface EntryCardProps {
   entry: Entry
   posts: ThreadPost[]
+  allEntries?: Entry[]
   onDelete: (id: string) => void
   onUpdate: (id: string, title: string, text: string, category: CategoryId | null, categoryMeta: CategoryMeta, tags: string[], imageIds: string[], location: string) => void
   onTagClick?: (tag: string) => void
-  onAddPost: (entryId: string, text: string, imageIds: string[]) => void
+  onAddPost: (entryId: string, text: string, imageIds: string[], customTime?: string) => void
   onDeletePost: (id: string) => void
 }
 
 function formatAmount(n: number) { return n.toLocaleString('ko-KR') + '원' }
 function formatRating(r: number) { return r % 1 === 0 ? `${r}.0` : `${r}` }
 
-export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddPost, onDeletePost }: EntryCardProps) {
+export function EntryCard({ entry, posts, allEntries = [], onDelete, onUpdate, onTagClick, onAddPost, onDeletePost }: EntryCardProps) {
   const [hovered, setHovered] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(entry.title)
@@ -96,7 +100,7 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
         {editTags.map(tag => (
           <span key={tag} className="inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded-sm bg-ink/8 text-ink border border-ink/15">
             #{tag}
-            <button onClick={() => setEditTags(prev => prev.filter(t => t !== tag))} className="text-accent/60 hover:text-accent cursor-pointer">×</button>
+            <button onClick={() => setEditTags(prev => prev.filter(t => t !== tag))} className="text-ink-faint/60 hover:text-ink-muted cursor-pointer flex items-center"><IconX size={11} /></button>
           </span>
         ))}
         <input value={tagInput} onChange={e => setTagInput(e.target.value)}
@@ -134,9 +138,9 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
 
       {/* 공통 메타 + 카테고리 — 구분선 + 인라인 한 줄 */}
       <div className="mt-4 pt-3 border-t border-paper-border flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <span className="text-sm text-ink-faint">⏱ {formatTime(entry.createdAt)}</span>
+        <span className="flex items-center gap-1 text-sm text-ink-faint"><IconClock size={13} /> {formatTime(entry.createdAt)}</span>
         {entry.location && (
-          <span className="text-sm text-ink-faint">📍 {entry.location}</span>
+          <span className="flex items-center gap-1 text-sm text-ink-faint"><IconMapPin size={13} /> {entry.location}</span>
         )}
         {categoryLabel && (
           <span className="text-sm text-ink-muted border border-paper-border rounded-sm px-1.5 py-0.5">{categoryLabel}</span>
@@ -145,7 +149,7 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
           <span className="text-sm text-ink-faint">{formatAmount(food.amount)}</span>
         )}
         {food?.rating != null && (
-          <span className="text-sm text-ink-faint">⭐ {formatRating(food.rating)}</span>
+          <span className="flex items-center gap-1 text-sm text-ink-faint"><IconStar size={13} /> {formatRating(food.rating)}</span>
         )}
         {entry.tags.length > 0 && entry.tags.map(tag => (
           <button key={tag} onClick={() => onTagClick?.(tag)}
@@ -162,6 +166,11 @@ export function EntryCard({ entry, posts, onDelete, onUpdate, onTagClick, onAddP
         <button onClick={() => onDelete(entry.id)}
           className="text-xs text-ink-faint hover:text-accent bg-none border-none p-0 cursor-pointer transition-colors">삭제</button>
       </div>
+
+      {/* 관련 기록 */}
+      {allEntries.length > 0 && (
+        <RelatedEntries entry={entry} allEntries={allEntries} />
+      )}
 
       {/* 타래 */}
       <ThreadView

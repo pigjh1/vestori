@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { IconChevronLeft, IconChevronRight } from '@/components/Icon'
 import { useRetrospect, type WeeklyRetro, type MonthlyRetro } from '@/hooks/useRetrospect'
 import { pad } from '@/utils/date'
 
@@ -42,11 +43,11 @@ function NavRow({ label, onPrev, onNext, disableNext }: {
 }) {
   return (
     <div className="flex items-center gap-3">
-      <button onClick={onPrev} className="w-7 h-7 flex items-center justify-center border border-paper-border rounded-sm text-ink-faint hover:border-ink/30 cursor-pointer transition-colors">‹</button>
+      <button onClick={onPrev} className="w-7 h-7 flex items-center justify-center border border-paper-border rounded-sm text-ink-faint hover:border-ink/30 cursor-pointer transition-colors"><IconChevronLeft size={14} /></button>
       <span className="italic text-sm text-ink flex-1 text-center">{label}</span>
       <button onClick={onNext} disabled={disableNext}
         className={`w-7 h-7 flex items-center justify-center border rounded-sm transition-colors cursor-pointer
-          ${disableNext ? 'border-paper-border text-ink-faint/30 cursor-not-allowed' : 'border-paper-border text-ink-faint hover:border-ink/30'}`}>›</button>
+          ${disableNext ? 'border-paper-border text-ink-faint/30 cursor-not-allowed' : 'border-paper-border text-ink-faint hover:border-ink/30'}`}><IconChevronRight size={14} /></button>
     </div>
   )
 }

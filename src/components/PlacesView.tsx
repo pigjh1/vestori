@@ -1,3 +1,4 @@
+import { IconMapPin, IconExternalLink, IconChevronDown, IconChevronUp } from './Icon'
 import { useState, useMemo } from 'react'
 import type { Entry } from '@/types'
 import { formatDateFull, formatTime } from '@/utils/date'
@@ -51,14 +52,14 @@ export function PlacesView({ entries }: { entries: Entry[] }) {
               {/* 장소 헤더 */}
               <button className="w-full flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-paper-warm transition-colors"
                 onClick={() => setSelected(isOpen ? null : place.location)}>
-                <span className="text-base">📍</span>
+                <IconMapPin size={15} className="flex-shrink-0" />
                 <span className="text-base text-ink flex-1 text-left">{place.location}</span>
                 <span className="text-sm text-ink-faint">{place.entries.length}개</span>
                 <a href={`https://maps.google.com/maps?q=${encodeURIComponent(place.location)}`}
                   target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  className="text-sm text-ink-faint hover:text-ink transition-colors px-1">↗</a>
-                <span className="text-sm text-ink-faint">{isOpen ? '▲' : '▽'}</span>
+                  className="text-sm text-ink-faint hover:text-ink transition-colors px-1"><IconExternalLink size={13} /></a>
+                <span className="text-ink-faint flex-shrink-0">{isOpen ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}</span>
               </button>
 
               {/* 기록 목록 */}

@@ -1,3 +1,4 @@
+import { IconClock } from './Icon'
 import { useState, KeyboardEvent } from 'react'
 import type { ThreadPost } from '@/types'
 import { formatTime, formatDateLabel, getDateKey, todayKey, pad } from '@/utils/date'
@@ -122,7 +123,7 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
             <button onClick={() => setUseCustomTime(v => !v)}
               className={`text-sm px-2 py-0.5 rounded-sm border transition-colors cursor-pointer
                 ${useCustomTime ? 'btn-sm btn-on' : 'btn-sm btn-off'}`}>
-              ⏱ 시간
+              <IconClock size={13} className="inline mr-1" /> 시간
             </button>
             {useCustomTime && (
               <input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)}

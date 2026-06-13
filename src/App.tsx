@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { Composer } from '@/components/Composer'
+import { OnThisDay } from '@/components/OnThisDay'
 import { SearchBar } from '@/components/SearchBar'
 import { Feed } from '@/components/Feed'
 import { CalendarMonth } from '@/components/CalendarMonth'
@@ -35,8 +36,15 @@ export function App() {
 
   const [anyPage, setAnyPage] = useState<AnyPage>('records')
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null)
+  const [quickMode, setQuickMode] = useState(() => new URLSearchParams(window.location.search).has('quick'))
 
   const handleSelect = (p: AnyPage) => {
+    // 기록 탭을 이미 보는 상태에서 다시 탭 → 빠른 기록 토글
+    if (p === 'records' && anyPage === 'records') {
+      setQuickMode(v => !v)
+      return
+    }
+    setQuickMode(false)
     setAnyPage(p)
     setPageMode(p)
     setSelectedDateKey(null)
@@ -89,14 +97,19 @@ export function App() {
 
         {anyPage === 'records' && (
           <>
-            <Composer onSubmit={(title, text, category, meta, tags, ids, loc, time) => addEntry(title, text, category, meta, tags, ids, loc, time)} />
+            <Composer quickMode={quickMode} onSubmit={(title, text, category, meta, tags, ids, loc, time) => addEntry(title, text, category, meta, tags, ids, loc, time)} />
             <SearchBar
               query={query} onQueryChange={setQuery}
               activeTag={activeTag} onTagClick={toggleTag}
               activeCategory={activeCategory} onCategoryClick={toggleCategory}
               allTags={allTags} hasActiveFilter={hasActiveFilter} onClear={clearFilters}
             />
-            {recordView === 'feed' && <Feed entries={filtered} {...feedProps} />}
+            {recordView === 'feed' && (
+              <>
+                <OnThisDay entries={entries} />
+                <Feed entries={filtered} {...feedProps} />
+              </>
+            )}
             {recordView === 'calendar' && (
               <>
                 <CalendarMonth entries={filtered}

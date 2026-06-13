@@ -1,8 +1,9 @@
-import { useState, useRef, useCallback, KeyboardEvent } from 'react'
+import { useState, useRef, useCallback, KeyboardEvent, useEffect } from 'react'
 import { CATEGORIES, type CategoryId, type CategoryMeta, type FoodMeta } from '@/types'
 import { ImageUploader } from './ImageUploader'
 import { ImageGallery } from './ImageGallery'
 import { FoodMetaFields } from './FoodMetaFields'
+import { BUILTIN_TEMPLATES } from '@/hooks/useTemplates'
 import { v4 as uuidv4 } from 'uuid'
 import { pad } from '@/utils/date'
 
@@ -22,16 +23,21 @@ interface ComposerProps {
     title: string, text: string, category: CategoryId | null, categoryMeta: CategoryMeta,
     tags: string[], imageIds: string[], location: string, createdAt: string
   ) => void
+  quickMode?: boolean
 }
 
-export function Composer({ onSubmit }: ComposerProps) {
+export function Composer({ onSubmit, quickMode }: ComposerProps) {
   const [title, setTitle] = useState('')
   const [text, setText] = useState('')
   const [showOptions, setShowOptions] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(false)
   const [category, setCategory] = useState<CategoryId | null>(null)
   const [foodMeta, setFoodMeta] = useState<Partial<FoodMeta>>({})
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
+
+  // 빠른 기록 모드: 자동으로 열림
+  useEffect(() => { if (quickMode) setShowOptions(true) }, [quickMode])
   const [imageIds, setImageIds] = useState<string[]>([])
   const [location, setLocation] = useState('')
   const [locating, setLocating] = useState(false)
@@ -242,6 +248,11 @@ export function Composer({ onSubmit }: ComposerProps) {
                 ${showOptions ? 'text-accent' : 'text-ink-faint hover:text-ink-muted'}`}>
               {showOptions ? '옵션 닫기' : '+ 옵션'}
             </button>
+            <button onClick={() => setShowTemplates(v => !v)}
+              className={`text-xs border-none bg-none p-0 cursor-pointer transition-colors
+                ${showTemplates ? 'text-accent' : 'text-ink-faint hover:text-ink-muted'}`}>
+              템플릿
+            </button>
             {!showOptions && activeBadges.map((b, i) => (
               <span key={i} className="text-xs px-1.5 py-0.5 rounded-sm bg-ink/8 text-ink border border-ink/15">{b}</span>
             ))}
@@ -251,6 +262,23 @@ export function Composer({ onSubmit }: ComposerProps) {
             기록하기
           </button>
         </div>
+
+        {/* 템플릿 선택 */}
+        {showTemplates && (
+          <div className="border-t border-paper-border px-4 py-3 flex flex-wrap gap-2">
+            {BUILTIN_TEMPLATES.map(tpl => (
+              <button key={tpl.id}
+                onClick={() => {
+                  setText(tpl.text)
+                  setTags(tpl.tags)
+                  setShowTemplates(false)
+                }}
+                className="flex items-center gap-1.5 text-sm px-2.5 py-1.5 rounded-sm border border-paper-border text-ink-muted hover:border-ink/30 hover:text-ink cursor-pointer bg-none transition-colors">
+                <span>{tpl.emoji}</span>{tpl.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

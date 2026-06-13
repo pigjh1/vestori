@@ -43,6 +43,7 @@ export function Feed({ entries, getPosts, onDelete, onUpdate, onTagClick, onAddP
           <div className="flex flex-col gap-3">
             {group.items.map(entry => (
               <EntryCard key={entry.id} entry={entry} posts={getPosts(entry.id)}
+                allEntries={entries}
                 onDelete={onDelete} onUpdate={onUpdate} onTagClick={onTagClick}
                 onAddPost={onAddPost} onDeletePost={onDeletePost} />
             ))}

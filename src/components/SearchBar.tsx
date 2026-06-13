@@ -1,5 +1,6 @@
 import type { CategoryId } from '@/types'
 import { CATEGORIES } from '@/types'
+import { IconSearch, IconX } from './Icon'
 
 interface SearchBarProps {
   query: string
@@ -33,13 +34,17 @@ export function SearchBar({ query, onQueryChange, onTagClick, onCategoryClick, a
 
       {/* 검색 */}
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint text-lg pointer-events-none leading-none">⌕</span>
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none">
+          <IconSearch size={15} />
+        </span>
         <input type="text" value={query} onChange={e => onQueryChange(e.target.value)}
           placeholder="기록 검색..."
-          className="w-full text-ink bg-paper-card border border-paper-border rounded-sm pl-7 pr-8 py-2 outline-none focus:border-ink/30 transition-colors placeholder:text-ink-faint" />
+          className="w-full text-ink bg-paper-card border border-paper-border rounded-sm pl-8 pr-8 py-2 outline-none focus:border-ink/30 transition-colors placeholder:text-ink-faint" />
         {query && (
           <button onClick={() => onQueryChange('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink text-sm cursor-pointer bg-none border-none">×</button>
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink cursor-pointer bg-none border-none p-0">
+            <IconX size={14} />
+          </button>
         )}
       </div>
 
