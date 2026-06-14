@@ -42,10 +42,10 @@ export function RoutinePage() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <p className="text-xs text-ink-faint mb-0.5">오늘</p>
-            <p className="text-base italic text-ink">{todayLabel}</p>
+            <p className="text-base text-ink">{todayLabel}</p>
           </div>
           <div className="text-right">
-            <p className="text-xl italic text-ink leading-none">{doneCount}</p>
+            <p className="text-xl text-ink leading-none">{doneCount}</p>
             <p className="text-xs text-ink-faint">/ {habits.length}개 완료</p>
           </div>
         </div>
@@ -59,8 +59,8 @@ export function RoutinePage() {
       <div className="flex flex-col gap-0 mb-4">
         {habits.length === 0 && !adding && (
           <div className="text-center py-12">
-            <div className="text-5xl italic text-paper-border leading-none mb-4">○</div>
-            <p className="text-sm font-light text-ink-faint italic leading-[1.7]">아직 루틴이 없어요.<br />아래 버튼으로 추가해보세요.</p>
+            <div className="text-5xl text-paper-border leading-none mb-4">○</div>
+            <p className="text-sm font-light text-ink-faint leading-[1.7]">아직 루틴이 없어요.<br />아래 버튼으로 추가해보세요.</p>
           </div>
         )}
 
@@ -115,7 +115,7 @@ export function RoutinePage() {
       {adding ? (
         <div className="flex items-center gap-2">
           <input autoFocus value={newHabit} onChange={e => setNewHabit(e.target.value)} onKeyDown={handleKeyDown}
-            placeholder="루틴 이름 입력..." maxLength={40}
+            placeholder="루틴 이름 입력" maxLength={40}
             className="flex-1 font-light text-ink bg-paper-card border border-accent-light rounded-sm px-3 py-2 outline-none placeholder:text-ink-faint" />
           <button onClick={handleAdd} disabled={!newHabit.trim()}
             className="text-sm bg-ink text-white px-4 py-2 rounded-sm hover:opacity-75 transition-colors cursor-pointer disabled:opacity-40">추가</button>

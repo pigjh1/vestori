@@ -24,8 +24,8 @@ export function Feed({ entries, getPosts, onDelete, onUpdate, onTagClick, onAddP
 
   if (entries.length === 0) return (
     <div className="text-center py-16">
-      <div className="text-5xl italic text-paper-border leading-none mb-4 tracking-[-2px]">∿</div>
-      <p className="text-sm font-light text-ink-faint italic leading-[1.7]">결과가 없어요.</p>
+      <div className="text-5xl text-paper-border leading-none mb-4 tracking-[-2px]">∿</div>
+      <p className="text-sm font-light text-ink-faint leading-[1.7]">결과가 없어요.</p>
     </div>
   )
 

@@ -123,9 +123,9 @@ export function Composer({ onSubmit, quickMode }: ComposerProps) {
       <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent rounded-l-sm" />
       <div className="px-4 pt-4 pb-3">
         <textarea ref={textareaRef} value={text} onChange={handleInput} onKeyDown={handleKeyDown}
-          placeholder="지금 이 순간을 기록하세요..."
+          placeholder="지금 이 순간을 기록하세요"
           maxLength={MAX_LENGTH} rows={3}
-          className="w-full border-none outline-none bg-transparent font-light text-ink leading-[1.75] resize-none min-h-[72px] placeholder:text-ink-faint placeholder:italic placeholder:font-light" />
+          className="w-full border-none outline-none bg-transparent font-light text-ink leading-[1.75] resize-none min-h-[72px] placeholder:text-ink-faint placeholder:placeholder:font-light" />
 
         {imageIds.length > 0 && (
           <ImageGallery imageIds={imageIds} editable onRemove={id => setImageIds(prev => prev.filter(i => i !== id))} />

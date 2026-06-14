@@ -117,7 +117,7 @@ export function MoodPage() {
           
           return (
             <div key={m} className="min-w-0">
-              <h3 className="text-xs italic text-ink mb-2">{KO_MONTHS[m]}</h3>
+              <h3 className="text-xs text-ink mb-2">{KO_MONTHS[m]}</h3>
               <div className="grid grid-cols-7 gap-1">
                 {KO_DAYS.map(d => (
                   <div key={d} className="text-center text-sm text-ink-faint font-500 h-5">{d}</div>
@@ -207,7 +207,7 @@ export function MoodPage() {
   return (
     <div>
       <div className="flex items-baseline gap-3 mb-5">
-        <span className="text-lg italic text-ink">{year}년의 기분</span>
+        <span className="text-lg text-ink">{year}년의 기분</span>
         <div className="flex-1 h-px bg-paper-border" />
         {avgOverall && <span className="text-xs text-ink-faint">평균 <span className="text-accent">{avgOverall}</span></span>}
       </div>
@@ -217,7 +217,7 @@ export function MoodPage() {
           className="w-full mb-5 bg-paper-card border border-paper-border rounded-sm px-4 py-3.5 text-left hover:border-ink/30 transition-colors cursor-pointer relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent rounded-l-sm" />
           <p className="text-xs text-ink-muted">오늘 기분을 아직 기록하지 않았어요.</p>
-          <p className="text-sm italic text-ink-faint mt-0.5">지금 어떠세요?</p>
+          <p className="text-sm text-ink-faint mt-0.5">지금 어떠세요?</p>
         </button>
       ) : (
         <div onClick={() => openInput(today)}
@@ -295,7 +295,7 @@ export function MoodPage() {
             <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-sm transition-all" style={{ background: moodColors[inputScore].bg }} />
             <div className="px-6 pt-5 pb-6">
               <p className="text-xs text-ink-faint mb-0.5">{formatDateFull(selectedDate)}</p>
-              <p className="text-base italic text-ink mb-5">오늘 하루는 어땠나요?</p>
+              <p className="text-base text-ink mb-5">오늘 하루는 어땠나요?</p>
 
               <div className="mb-4">
                 <label className="text-xs text-ink-faint">시간</label>
@@ -320,7 +320,7 @@ export function MoodPage() {
                   </button>
                 ))}
               </div>
-              <p className="text-sm italic text-ink-muted text-center mb-4">{moodColors[inputScore].label}</p>
+              <p className="text-sm text-ink-muted text-center mb-4">{moodColors[inputScore].label}</p>
 
               <div className="flex gap-2">
                 <button onClick={handleSave}

@@ -38,7 +38,7 @@ export function SearchBar({ query, onQueryChange, onTagClick, onCategoryClick, a
           <IconSearch size={15} />
         </span>
         <input type="text" value={query} onChange={e => onQueryChange(e.target.value)}
-          placeholder="기록 검색..."
+          placeholder="기록 검색"
           className="w-full text-ink bg-paper-card border border-paper-border rounded-sm pl-8 pr-8 py-2 outline-none focus:border-ink/30 transition-colors placeholder:text-ink-faint" />
         {query && (
           <button onClick={() => onQueryChange('')}

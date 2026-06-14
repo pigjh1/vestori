@@ -2,7 +2,7 @@ import type { PageMode } from '@/hooks/useFilter'
 
 type AnyPage = PageMode
 
-const Icons = {
+const Icons: Record<string, JSX.Element> = {
   records: (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
       <line x1="4" y1="6" x2="18" y2="6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
@@ -49,13 +49,13 @@ const Icons = {
   ),
 }
 
-const NAV_ITEMS: { page: AnyPage; label: string; icon: JSX.Element }[] = [
-  { page: 'records',     label: '기록',  icon: Icons.records },
-  { page: 'mood',        label: '기분',  icon: Icons.mood },
-  { page: 'routine',     label: '루틴',  icon: Icons.routine },
-  { page: 'diet',        label: '식단',  icon: Icons.diet },
-  { page: 'retrospect',  label: '회고',  icon: Icons.retrospect },
-  { page: 'settings',    label: '설정',  icon: Icons.settings },
+const NAV_ITEMS: { page: AnyPage; label: string }[] = [
+  { page: 'records',    label: '기록' },
+  { page: 'mood',       label: '기분' },
+  { page: 'routine',    label: '루틴' },
+  { page: 'diet',       label: '식단' },
+  { page: 'retrospect', label: '회고' },
+  { page: 'settings',   label: '설정' },
 ]
 
 interface BottomNavProps {
@@ -65,29 +65,35 @@ interface BottomNavProps {
 
 export function BottomNav({ pageMode, onSelect }: BottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30
-      bg-paper/95 backdrop-blur-sm border-t border-paper-border
-      flex items-stretch transition-colors duration-300
-      safe-bottom">
-      {NAV_ITEMS.map(({ page, label, icon }) => {
-        const active = pageMode === page
-        return (
-          <button key={page} onClick={() => onSelect(page)}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-all cursor-pointer border-none
-              ${active ? 'text-accent' : 'text-ink-faint hover:text-ink'}`}>
-            <span className="relative">
-              {icon}
-              {active && (
-                <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
-              )}
-            </span>
-            <span className={`leading-none transition-all
-              ${active ? 'text-xs font-medium' : 'text-xs font-light'}`}>
-              {label}
-            </span>
-          </button>
-        )
-      })}
+    <nav className="fixed bottom-0 left-0 right-0 z-30 safe-bottom"
+      style={{ background: 'var(--color-paper)', borderTop: '1px solid var(--color-paper-border)' }}>
+      <div className="max-w-lg mx-auto flex items-center">
+        {NAV_ITEMS.map(({ page, label }) => {
+          const active = pageMode === page
+          return (
+            <button key={page} onClick={() => onSelect(page)}
+              className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 cursor-pointer border-none bg-none transition-colors"
+              style={{ color: active ? 'var(--color-ink)' : 'var(--color-ink-faint)' }}>
+              <span style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 26,
+                borderRadius: 13,
+                background: active ? 'color-mix(in srgb, var(--color-ink) 10%, transparent)' : 'transparent',
+                transition: 'background 0.2s ease',
+              }}>
+                {Icons[page]}
+              </span>
+              <span className="text-xs leading-none" style={{
+                fontWeight: active ? 600 : 400,
+                fontSize: 10,
+              }}>{label}</span>
+            </button>
+          )
+        })}
+      </div>
     </nav>
   )
 }

@@ -33,7 +33,7 @@ function Field({ label, value, onChange, placeholder, rows = 3 }: {
       <span className="text-xs text-ink-muted font-500">{label}</span>
       <textarea value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder} rows={rows}
-        className="w-full text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-ink/30 transition-colors resize-none leading-relaxed placeholder:text-ink-faint placeholder:italic" />
+        className="w-full text-ink bg-paper-warm border border-paper-border rounded-sm px-3 py-2 outline-none focus:border-ink/30 transition-colors resize-none leading-relaxed placeholder:text-ink-faint placeholder:" />
     </div>
   )
 }
@@ -44,7 +44,7 @@ function NavRow({ label, onPrev, onNext, disableNext }: {
   return (
     <div className="flex items-center gap-3">
       <button onClick={onPrev} className="w-7 h-7 flex items-center justify-center border border-paper-border rounded-sm text-ink-faint hover:border-ink/30 cursor-pointer transition-colors"><IconChevronLeft size={14} /></button>
-      <span className="italic text-sm text-ink flex-1 text-center">{label}</span>
+      <span className="text-sm text-ink flex-1 text-center">{label}</span>
       <button onClick={onNext} disabled={disableNext}
         className={`w-7 h-7 flex items-center justify-center border rounded-sm transition-colors cursor-pointer
           ${disableNext ? 'border-paper-border text-ink-faint/30 cursor-not-allowed' : 'border-paper-border text-ink-faint hover:border-ink/30'}`}><IconChevronRight size={14} /></button>
@@ -141,19 +141,19 @@ export function RetrospectPage() {
 
           <Field label="✅ 이번 주 잘한 것" value={weekly.wins}
             onChange={v => setWeekly(p => ({ ...p, wins: v }))}
-            placeholder="작은 것도 좋아요. 이번 주 나를 칭찬해주세요..." />
+            placeholder="작은 것도 좋아요. 이번 주 나를 칭찬해주세요" />
 
           <Field label="📚 배운 것" value={weekly.learnings}
             onChange={v => setWeekly(p => ({ ...p, learnings: v }))}
-            placeholder="새로 알게 된 것, 깨달은 것을 적어보세요..." />
+            placeholder="새로 알게 된 것, 깨달은 것을 적어보세요" />
 
           <Field label="😤 힘들었던 것" value={weekly.challenges}
             onChange={v => setWeekly(p => ({ ...p, challenges: v }))}
-            placeholder="어려웠던 점, 힘들었던 순간을 돌아봐요..." />
+            placeholder="어려웠던 점, 힘들었던 순간을 돌아봐요" />
 
           <Field label="🎯 다음 주 집중할 것" value={weekly.next_focus}
             onChange={v => setWeekly(p => ({ ...p, next_focus: v }))}
-            placeholder="다음 주에 꼭 해야 할 것, 집중할 것을 정해요..." />
+            placeholder="다음 주에 꼭 해야 할 것, 집중할 것을 정해요" />
 
           <Field label="⚡ 에너지 / 컨디션" value={weekly.energy}
             onChange={v => setWeekly(p => ({ ...p, energy: v }))}
@@ -174,29 +174,29 @@ export function RetrospectPage() {
           <div className="flex flex-col gap-4 pl-3 border-l-2 border-accent-pale">
             <Field label="Work" value={monthly.achievements_work}
               onChange={v => setMonthly(p => ({ ...p, achievements_work: v }))}
-              placeholder="이번 달 업무 성과를 기록해보세요..." />
+              placeholder="이번 달 업무 성과를 기록해보세요" />
             <Field label="개인" value={monthly.achievements_personal}
               onChange={v => setMonthly(p => ({ ...p, achievements_personal: v }))}
-              placeholder="이번 달 개인적인 성취를 기록해보세요..." />
+              placeholder="이번 달 개인적인 성취를 기록해보세요" />
           </div>
 
           <div className="h-px bg-paper-border" />
 
           <Field label="🌱 개선할 사항" value={monthly.improvements}
             onChange={v => setMonthly(p => ({ ...p, improvements: v }))}
-            placeholder="이번 달 아쉬웠던 점, 개선이 필요한 부분을..." />
+            placeholder="이번 달 아쉬웠던 점, 개선이 필요한 부분을" />
 
           <Field label="💡 개선 아이디어" value={monthly.ideas}
             onChange={v => setMonthly(p => ({ ...p, ideas: v }))}
-            placeholder="더 잘하기 위한 아이디어를 적어보세요..." />
+            placeholder="더 잘하기 위한 아이디어를 적어보세요" />
 
           <Field label="✔ 액션 아이템" value={monthly.actions}
             onChange={v => setMonthly(p => ({ ...p, actions: v }))}
-            placeholder="다음 달에 실행할 구체적인 액션을..." />
+            placeholder="다음 달에 실행할 구체적인 액션을" />
 
           <Field label="기타" value={monthly.others}
             onChange={v => setMonthly(p => ({ ...p, others: v }))}
-            placeholder="그 외 기록하고 싶은 내용..." rows={2} />
+            placeholder="그 외 기록하고 싶은 내용" rows={2} />
         </div>
       )}
 

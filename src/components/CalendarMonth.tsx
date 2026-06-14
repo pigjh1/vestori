@@ -32,7 +32,7 @@ export function CalendarMonth({ entries, onDayClick, selectedDateKey }: Calendar
     <div className="bg-paper-card border border-paper-border rounded-sm mb-5">
       <div className="flex items-center justify-between px-4 py-3 border-b border-paper-border">
         <button onClick={prevMonth} className="text-ink-faint hover:text-ink cursor-pointer bg-none border-none px-2 py-1 text-sm">←</button>
-        <span className="text-sm italic text-ink-muted">{year}년 {MONTHS[month]}</span>
+        <span className="text-sm text-ink-muted">{year}년 {MONTHS[month]}</span>
         <button onClick={nextMonth} className="text-ink-faint hover:text-ink cursor-pointer bg-none border-none px-2 py-1 text-sm">→</button>
       </div>
       <div className="p-3">

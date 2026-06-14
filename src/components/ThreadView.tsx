@@ -107,7 +107,7 @@ export function ThreadView({ entryId, posts, onAdd, onDelete }: ThreadViewProps)
           <textarea value={text} autoFocus
             onChange={e => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="이어서 기록하기..."
+            placeholder="이어서 기록하기"
             rows={2} maxLength={500}
             className="w-full font-light text-ink bg-transparent border-b border-paper-border outline-none focus:border-ink/30 resize-none placeholder:text-ink-faint transition-colors pb-1"
           />

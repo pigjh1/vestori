@@ -37,8 +37,8 @@ export function PhotosView({ entries }: { entries: Entry[] }) {
     return () => { cancelled = true }
   }, [entries])
 
-  if (loading) return <div className="text-sm text-ink-faint py-12 text-center">사진 불러오는 중...</div>
-  if (photos.length === 0) return <div className="text-sm text-ink-faint py-12 text-center italic">사진이 없어요</div>
+  if (loading) return <div className="text-sm text-ink-faint py-12 text-center">사진 불러오는 중</div>
+  if (photos.length === 0) return <div className="text-sm text-ink-faint py-12 text-center">사진이 없어요</div>
 
   return (
     <div>

@@ -166,7 +166,7 @@ export function DietPage() {
                 </div>
               ) : (
                 <div className="px-4 py-3">
-                  <p className="text-sm text-ink-faint italic">기록 없음</p>
+                  <p className="text-sm text-ink-faint">기록 없음</p>
                 </div>
               )}
             </div>

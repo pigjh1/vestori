@@ -30,7 +30,7 @@ export function PlacesView({ entries }: { entries: Entry[] }) {
     : places
 
   if (places.length === 0) return (
-    <div className="py-12 text-center text-sm text-ink-faint italic">위치 기록이 없어요</div>
+    <div className="py-12 text-center text-sm text-ink-faint">위치 기록이 없어요</div>
   )
 
   return (

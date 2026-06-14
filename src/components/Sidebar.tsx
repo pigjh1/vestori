@@ -79,7 +79,7 @@ export function Sidebar({ pageMode, onSelect, dark, onToggleDark }: SidebarProps
       bg-paper border-r border-paper-border transition-colors duration-300">
 
       <div className="mb-7 flex-shrink-0">
-        <span className="text-xl italic text-ink leading-none select-none">V</span>
+        <span className="text-xl text-ink leading-none select-none">V</span>
       </div>
 
       <nav className="flex flex-col items-center gap-0.5 flex-1">

@@ -118,7 +118,7 @@ export function EntryCard({ entry, posts, allEntries = [], onDelete, onUpdate, o
   )
 
   return (
-    <div className="bg-paper-card border border-paper-border rounded-sm px-4 py-4 animate-fade-slide"
+    <div className="bg-paper-card rounded-sm px-4 py-4 card-shadow animate-fade-slide"
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
 
       {/* 제목 */}

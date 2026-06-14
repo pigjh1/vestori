@@ -40,7 +40,7 @@ export function CalendarTimeline({ entries, getPosts, onDelete, onUpdate, onTagC
       {months.map(month => (
         <div key={month.mKey} className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-sm italic text-ink-muted whitespace-nowrap">{month.label}</span>
+            <span className="text-sm text-ink-muted whitespace-nowrap">{month.label}</span>
             <div className="flex-1 h-px bg-paper-border" />
           </div>
           {month.days.map(day => (

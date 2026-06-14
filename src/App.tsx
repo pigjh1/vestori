@@ -86,9 +86,9 @@ export function App() {
       <div className="fixed inset-0 pointer-events-none z-50 opacity-30"
         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")` }} />
 
-      <div className="max-w-[680px] mx-auto px-4 sm:px-8 pb-24">
-        <div className="flex items-center justify-between pt-4 sm:hidden">
-          <span className="text-xl italic text-ink">Vestori</span>
+      <div className="max-w-lg mx-auto px-4 sm:px-6 pb-28">
+        <div className="flex items-center justify-between pt-5 pb-1">
+          <span className="text-lg text-ink-muted tracking-tight" style={{ fontStyle: '', letterSpacing: '-0.03em' }}>Vestori</span>
           <DarkToggle />
         </div>
 

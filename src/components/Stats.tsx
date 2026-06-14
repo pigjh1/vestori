@@ -55,8 +55,8 @@ export function Stats({ entries }: StatsProps) {
 
   if (!stats) return (
     <div className="text-center py-16">
-      <div className="text-5xl italic text-paper-border mb-4">∿</div>
-      <p className="text-sm font-light text-ink-faint italic">기록이 쌓이면 통계가 보여요.</p>
+      <div className="text-5xl text-paper-border mb-4">∿</div>
+      <p className="text-sm font-light text-ink-faint">기록이 쌓이면 통계가 보여요.</p>
     </div>
   )
 
@@ -65,7 +65,7 @@ export function Stats({ entries }: StatsProps) {
       <div className="grid grid-cols-3 gap-3">
         {[{ label: '전체', value: entries.length }, { label: '이번 달', value: stats.thisMonth.length }, { label: '최근 7일', value: stats.thisWeek.length }].map(({ label, value }) => (
           <div key={label} className="bg-paper-card border border-paper-border rounded-sm p-4 text-center">
-            <p className="text-xl italic text-ink leading-none mb-1">{value}</p>
+            <p className="text-xl text-ink leading-none mb-1">{value}</p>
             <p className="text-xs text-ink-faint">{label}</p>
           </div>
         ))}
@@ -73,7 +73,7 @@ export function Stats({ entries }: StatsProps) {
 
       {stats.streak > 0 && (
         <div className="bg-paper-card border border-paper-border rounded-sm px-4 py-3 flex items-center gap-3">
-          <span className="text-xl italic text-ink">{stats.streak}</span>
+          <span className="text-xl text-ink">{stats.streak}</span>
           <div>
             <p className="text-sm text-ink font-light">일 연속 기록 중</p>
             <p className="text-xs text-ink-faint">오늘도 흔적을 남겨보세요</p>
